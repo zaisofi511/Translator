@@ -344,7 +344,13 @@
         const candidate = data.candidates?.[0];
         const translated = candidate?.content?.parts?.[0]?.text;
         if (!translated) throw new Error('No translation text found in response.');
-        el.outputText.value = translated.trim();
+
+        // 🔹 Clean output before displaying
+        let cleaned = translated.trim();
+        cleaned = cleaned.replace(/^%%+|%%+$/g, "");  // strip %% at start/end
+        cleaned = cleaned.replace(/^"+|"+$/g, "");    // strip quotes at start/end
+        el.outputText.value = cleaned.trim();
+
         showMessage('Translation completed successfully!','success');
       } catch (e) {
         showMessage(`Translation failed: ${e.message}`, 'error');
