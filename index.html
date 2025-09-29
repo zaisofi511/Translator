@@ -134,6 +134,44 @@
         </div>
       </div>
 
+      <!-- Japanese Formality & Dialect -->
+      <div id="jpFormalityContainer" class="hidden space-y-4">
+        <div>
+          <label class="block text-xs text-neutral-400 mb-1">Japanese Formality Level</label>
+          <select id="jpFormalityLevel" class="w-full p-3 rounded-lg bg-neutral-900 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <option value="Plain Form">普通語 (Futsūgo) / 砕けた (Kudaketa) — Plain form</option>
+            <option value="Casual">タメ語 (Tamego) — Casual between equals</option>
+            <option value="Polite">丁寧語 (Teineigo) — Polite</option>
+            <option value="Respectful">尊敬語 (Sonkeigo) — Respectful</option>
+            <option value="Humble">謙譲語 (Kenjōgo) — Humble</option>
+            <option value="Casual Slang">ネットスラング / 若者言葉 — Casual slang & texting</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs text-neutral-400 mb-1">Japanese Dialect</label>
+          <select id="jpDialectLevel" class="w-full p-3 rounded-lg bg-neutral-900 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <optgroup label="Eastern Japanese Dialects">
+              <option value="Kanto">関東方言 (Kanto Dialect)</option>
+              <option value="Tohoku">東北方言 (Tōhoku Dialect)</option>
+              <option value="Hokkaido">北海道方言 (Hokkaidō Dialect)</option>
+            </optgroup>
+            <optgroup label="Western Japanese Dialects">
+              <option value="Kansai">関西方言 (Kansai Dialect)</option>
+              <option value="Chugoku">中国方言 (Chūgoku Dialect)</option>
+              <option value="Shikoku">四国方言 (Shikoku Dialect)</option>
+            </optgroup>
+            <optgroup label="Kyūshū Dialects">
+              <option value="Hakata">博多方言 (Hakata Dialect)</option>
+              <option value="Kagoshima">鹿児島方言 (Kagoshima Dialect)</option>
+            </optgroup>
+            <optgroup label="Hachijo Dialect">
+              <option value="Hachijo">八丈方言 (Hachijō Dialect)</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+
       <!-- Text Areas -->
       <div class="grid sm:grid-cols-2 gap-4">
         <div class="space-y-2">
@@ -250,7 +288,9 @@
 
     function toggleFormality(){
       const isKoreanOut = el.outputLang.value === 'Korean';
+      const isJapaneseOut = el.outputLang.value === 'Japanese';
       el.formalityContainer.classList.toggle('hidden', !isKoreanOut);
+      document.getElementById('jpFormalityContainer').classList.toggle('hidden', !isJapaneseOut);
     }
 
     function swapLanguages(){
@@ -313,6 +353,14 @@
           const dialect = el.dialectLevel.value;
           prompt += ` Use the ${formality} style`;
           if (dialect !== 'Standard Korean') prompt += ` and translate using ${dialect} characteristics and expressions`;
+          prompt += '.';
+        }
+
+        if (outputLang === 'Japanese') {
+          const jpFormality = document.getElementById('jpFormalityLevel').value;
+          const jpDialect = document.getElementById('jpDialectLevel').value;
+          prompt += ` Use the ${jpFormality} style`;
+          if (jpDialect !== '') prompt += ` and apply features of the ${jpDialect}.`;
           prompt += '.';
         }
         prompt += `\n\nText to translate: %%${text}%%\n\nProvide ONLY the translation, no explanations.`;
