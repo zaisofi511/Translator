@@ -62,27 +62,17 @@
       <div id="apiConfigSection" class="hidden">
         <div class="rounded-xl border border-sky-500/30 bg-sky-500/10 p-4 space-y-3 fade-in">
           <div class="flex items-center justify-between">
-            <h3 class="text-base font-medium text-sky-300">API Configuration</h3>
+            <h3 class="text-base font-medium text-sky-300">Grok API Configuration</h3>
           </div>
           <div class="space-y-3">
             <div class="flex flex-col sm:flex-row gap-3">
               <div class="flex-1">
-                <input type="password" id="apiKeyInput" placeholder="Enter your Gemini API key..." class="w-full p-3 rounded-lg bg-neutral-900 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                <input type="password" id="apiKeyInput" placeholder="Enter your Groq API key..." class="w-full p-3 rounded-lg bg-neutral-900 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-sky-500" />
               </div>
               <button id="toggleApiKey" class="px-3 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600" title="Show/Hide API key">
                 <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
               </button>
               <button id="saveApiKey" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium">Save Key</button>
-            </div>
-            <div class="text-sm text-sky-300/90">
-              <p>🔑 <strong>How to get your API key:</strong></p>
-              <ol class="ml-4 mt-1 list-decimal space-y-1">
-                <li>Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-sky-300 underline">Google AI Studio</a></li>
-                <li>Sign in with your Google account</li>
-                <li>Click "Create API key" and copy it</li>
-                <li>Paste it above and click "Save Key"</li>
-              </ol>
-              <p class="mt-2 text-xs">🔒 Your API key is stored locally in your browser and never shared.</p>
             </div>
           </div>
         </div>
@@ -203,10 +193,11 @@
   <script>
     // ===== Configuration =====
     const CONFIG = {
-    API_URL: "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent",
-    MAX_CHARS: 5000,
-    API_KEY_STORAGE: 'gemini_api_key'
+        API_URL: "https://api.groq.com/openai/v1/chat/completions",
+        MAX_CHARS: 5000,
+        API_KEY_STORAGE: 'groq_api_key'
     };
+
 
 
     // ===== API Key Manager (same behavior/format) =====
@@ -214,7 +205,8 @@
       save(key){ try{ localStorage.setItem(CONFIG.API_KEY_STORAGE, btoa(key)); return true }catch{ return false } },
       load(){ try{ const e = localStorage.getItem(CONFIG.API_KEY_STORAGE); return e ? atob(e) : null }catch{ return null } },
       remove(){ localStorage.removeItem(CONFIG.API_KEY_STORAGE) },
-      isValid(k){ return k && k.length > 20 && k.startsWith('AIza') }
+      isValid(k){ return k && k.startsWith('gsk_') }
+
     };
 
     // ===== Elements =====
@@ -345,7 +337,7 @@
     function saveApiKey(){
       const key = el.apiKeyInput.value.trim();
       if (!key) return showMessage('Please enter an API key.', 'error');
-      if (!ApiKeyManager.isValid(key)) return showMessage("Invalid API key format. Gemini API keys should start with 'AIza'.", 'error');
+      if (!ApiKeyManager.isValid(key)) return showMessage("Invalid API key format. Groq API keys should start with 'gsk_'.", 'error');
       ApiKeyManager.save(key) ? (showMessage('API key saved successfully!','success'), updateProviderStatus(), setTimeout(()=>toggleProviderSection(), 800)) : showMessage('Failed to save API key. Try again.','error');
     }
 
@@ -392,9 +384,24 @@
 
         const controller = new AbortController();
         const timeoutId = setTimeout(()=> controller.abort(), 30000);
-        const res = await fetch(`${CONFIG.API_URL}?key=${apiKey}`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: controller.signal,
+        const groqPayload = {
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: "You are a precise translation engine. Output ONLY the translation." },
+            { role: "user", content: prompt }
+          ],
+          temperature: 0.2
+        };
+
+        const res = await fetch(CONFIG.API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`
+          },
+          body: JSON.stringify(groqPayload)
         });
+
         clearTimeout(timeoutId);
         if (!res.ok) {
           const err = await res.json().catch(()=>({error:{message:`HTTP ${res.status}`}}));
@@ -403,8 +410,7 @@
         }
         const data = await res.json();
         if (data.promptFeedback?.blockReason) throw new Error(`Content blocked by safety filters: ${data.promptFeedback.blockReason}`);
-        const candidate = data.candidates?.[0];
-        const translated = candidate?.content?.parts?.[0]?.text;
+        const translated = data.choices?.[0]?.message?.content;
         if (!translated) throw new Error('No translation text found in response.');
 
         // 🔹 Clean output before displaying
