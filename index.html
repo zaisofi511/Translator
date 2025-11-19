@@ -284,8 +284,16 @@
       toggleFormality();
     }
 
-    function onInputLangChange(){ populateLanguageSelects(); }
-    function onOutputLangChange(){ toggleFormality(); }
+    function onInputLangChange(){
+      populateLanguageSelects();
+      clearTextFields(); // clear input & output when input language changes
+    }
+
+    function onOutputLangChange(){
+      toggleFormality();
+      clearTextFields(); // clear input & output when output language changes
+    }
+
 
     function toggleFormality(){
       const isKoreanOut = el.outputLang.value === 'Korean';
@@ -296,18 +304,23 @@
 
     function swapLanguages(){
       const temp = el.inputLang.value;
-      const tempText = el.inputText.value;
       el.inputLang.value = el.outputLang.value; // may not exist in input yet, so repopulate
       populateLanguageSelects();
       el.outputLang.value = temp; // will be auto-removed if same as input; repopulate again
       populateLanguageSelects();
-      // swap text
-      el.inputText.value = el.outputText.value;
-      el.outputText.value = tempText;
-      updateCharCount();
+      // After swapping languages, clear both fields
+      clearTextFields();
+      el.inputText.focus();
     }
 
+
     function updateCharCount(){ el.charCount.textContent = `${el.inputText.value.length} characters`; }
+
+    function clearTextFields() {
+  el.inputText.value = '';
+  el.outputText.value = '';
+  updateCharCount();
+}
 
     function updateProviderStatus(){
       const key = ApiKeyManager.load();
@@ -411,7 +424,11 @@
       navigator.clipboard.writeText(t).then(()=> showMessage('Translation copied to clipboard!','success')).catch(()=> showMessage('Failed to copy. Select and copy manually.','error'));
     }
 
-    function clearAll(){ el.inputText.value = ''; el.outputText.value = ''; el.messageBox.classList.add('hidden'); updateCharCount(); el.inputText.focus(); }
+    function clearAll(){
+      clearTextFields();
+      el.messageBox.classList.add('hidden');
+      el.inputText.focus();
+    }
 
     // ===== Events =====
     el.toggleProviderBtn.addEventListener('click', toggleProviderSection);
