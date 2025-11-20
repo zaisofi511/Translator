@@ -53,7 +53,7 @@
           <span id="providerStatusText" class="text-red-400">Configure Translator ⚠</span>
         </div>
         <button id="toggleProviderBtn" class="sm:ml-auto inline-flex items-center justify-center px-3 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-sm">
-          Configure API Key
+          Configure API
           <svg id="providerChevron" class="w-4 h-4 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
       </div>
@@ -74,6 +74,17 @@
               </button>
               <button id="saveApiKey" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium">Save Key</button>
             </div>
+            <!-- NEW: model input -->
+            <div class="space-y-2 mt-3">
+              <label class="block text-xs text-neutral-300">Model</label>
+              <input
+                type="text"
+                id="modelInput"
+                placeholder="Enter model (default: moonshotai/kimi-k2-instruct)"
+                class="w-full p-3 rounded-lg bg-neutral-900 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+            </div>
+          </div>
           </div>
         </div>
       </div>
@@ -209,12 +220,39 @@
 
     };
 
+    // ===== Model Manager =====
+    const ModelManager = {
+      STORAGE_KEY: 'groq_model',
+      defaultModel: 'moonshotai/kimi-k2-instruct',
+      save(name) {
+        try {
+          if (!name) {
+            localStorage.removeItem(this.STORAGE_KEY);
+            return true;
+          }
+          localStorage.setItem(this.STORAGE_KEY, name);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      load() {
+        try {
+          return localStorage.getItem(this.STORAGE_KEY) || this.defaultModel;
+        } catch {
+          return this.defaultModel;
+        }
+      }
+    };
+
+
     // ===== Elements =====
     const el = {
       providerStatusText: document.getElementById('providerStatusText'),
       toggleProviderBtn: document.getElementById('toggleProviderBtn'),
       apiConfigSection: document.getElementById('apiConfigSection'),
       providerChevron: document.getElementById('providerChevron'),
+      modelInput: document.getElementById('modelInput'),
       apiKeyInput: document.getElementById('apiKeyInput'),
       saveApiKey: document.getElementById('saveApiKey'),
       toggleApiKey: document.getElementById('toggleApiKey'),
@@ -336,10 +374,23 @@
 
     function saveApiKey(){
       const key = el.apiKeyInput.value.trim();
+      const modelName = (el.modelInput.value || '').trim();
+
       if (!key) return showMessage('Please enter an API key.', 'error');
       if (!ApiKeyManager.isValid(key)) return showMessage("Invalid API key format. Groq API keys should start with 'gsk_'.", 'error');
-      ApiKeyManager.save(key) ? (showMessage('API key saved successfully!','success'), updateProviderStatus(), setTimeout(()=>toggleProviderSection(), 800)) : showMessage('Failed to save API key. Try again.','error');
+
+      const keySaved = ApiKeyManager.save(key);
+      const modelSaved = ModelManager.save(modelName || ModelManager.defaultModel);
+
+      if (keySaved && modelSaved) {
+        showMessage('API and model saved successfully!','success');
+        updateProviderStatus();
+        setTimeout(()=>toggleProviderSection(), 800);
+      } else {
+        showMessage('Failed to save API or model. Try again.','error');
+      }
     }
+
 
     // ===== Translate =====
     async function translateText(){
@@ -384,14 +435,17 @@
 
         const controller = new AbortController();
         const timeoutId = setTimeout(()=> controller.abort(), 30000);
+        const modelName = ModelManager.load();
+
         const groqPayload = {
-          model: "moonshotai/kimi-k2-instruct",
+          model: modelName,
           messages: [
             { role: "system", content: "You are a precise translation engine. Output ONLY the translation." },
             { role: "user", content: prompt }
           ],
           temperature: 0.2
         };
+
 
         const res = await fetch(CONFIG.API_URL, {
           method: "POST",
@@ -462,9 +516,16 @@
       el.outputLang.value = 'Korean';
       toggleFormality();
       updateProviderStatus();
+
+      // NEW: load model into the textbox (default if nothing saved)
+      if (el.modelInput) {
+        el.modelInput.value = ModelManager.load();
+      }
+
       updateCharCount();
       el.inputText.focus();
     })();
+
   </script>
 </body>
 </html>
