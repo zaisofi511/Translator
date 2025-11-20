@@ -353,12 +353,12 @@
 
       setLoading(true); el.messageBox.classList.add('hidden');
       try {
-        let prompt = `You are a professional translator. Translate the following text that is between %% from ${inputLang} to ${outputLang}. Translate ALL content literally and accurately, including any profanity, slang, or colloquial expressions. Do not censor, modify, or refuse to translate any words.`;
+        let prompt = `You are a professional translator. Translate the following text that is between %% from ${inputLang} to ${outputLang}. Translate ALL content literally and accurately, including any profanity, slang, or colloquial expressions. Do not censor, modify, or refuse to translate any words. Make sure the translation is natural and what humans would say.`;
         if (outputLang === 'Korean') {
           const formality = el.formalityLevel.value;
           const dialect = el.dialectLevel.value;
           prompt += ` Use the ${formality} style`;
-          if (dialect !== 'Standard Korean') prompt += ` and translate using ${dialect} characteristics and expressions`;
+          if (dialect !== 'Standard Korean') prompt += ` and translate using ${dialect} characteristics and expressions, the dialect is important.`;
           prompt += '.';
         }
 
@@ -385,7 +385,7 @@
         const controller = new AbortController();
         const timeoutId = setTimeout(()=> controller.abort(), 30000);
         const groqPayload = {
-          model: "llama-3.3-70b-versatile",
+          model: "moonshotai/kimi-k2-instruct",
           messages: [
             { role: "system", content: "You are a precise translation engine. Output ONLY the translation." },
             { role: "user", content: prompt }
@@ -415,6 +415,7 @@
 
         // 🔹 Clean output before displaying
         let cleaned = translated.trim();
+        cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, "");
         cleaned = cleaned.replace(/^%%+|%%+$/g, "");  // strip %% at start/end
         cleaned = cleaned.replace(/^"+|"+$/g, "");    // strip quotes at start/end
         el.outputText.value = cleaned.trim();
