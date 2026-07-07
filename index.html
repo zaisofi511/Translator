@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Nuance — AI Translator</title>
+<title>Nuance — Translator</title>
 
 <!-- App icon: embedded SVG, no external files needed -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%237c3aed%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2306b6d4%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%20x%3D%22-20%25%22%20y%3D%22-20%25%22%20width%3D%22140%25%22%20height%3D%22140%25%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2214%22%20stdDeviation%3D%2218%22%20flood-color%3D%22%23000000%22%20flood-opacity%3D%220.25%22%2F%3E%0A%20%20%20%20%3C%2Ffilter%3E%0A%20%20%3C%2Fdefs%3E%0A%0A%20%20%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22112%22%20fill%3D%22url%28%23bg%29%22%2F%3E%0A%0A%20%20%3Ccircle%20cx%3D%22372%22%20cy%3D%22134%22%20r%3D%2252%22%20fill%3D%22%23ffffff%22%20opacity%3D%220.16%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%22118%22%20cy%3D%22392%22%20r%3D%2276%22%20fill%3D%22%23ffffff%22%20opacity%3D%220.08%22%2F%3E%0A%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2284%22%20y%3D%2292%22%20width%3D%22344%22%20height%3D%22328%22%20rx%3D%2258%22%20fill%3D%22%23ffffff%22%20opacity%3D%220.16%22%2F%3E%0A%20%20%3C%2Fg%3E%0A%0A%20%20%3Cg%20fill%3D%22%23ffffff%22%3E%0A%20%20%20%20%3Cpath%20d%3D%22M118%20142h154v43h-56c-8%2032-22%2060-43%2084%2020%2013%2043%2023%2069%2031l-25%2039c-29-10-54-24-75-42-23%2020-51%2035-84%2047l-22-41c29-9%2054-22%2074-38-15-18-28-39-37-63h47c6%2012%2013%2023%2022%2034%2013-15%2023-32%2029-51h-53v-43Zm24-70h50v42h-50V72Z%22%2F%3E%0A%0A%20%20%20%20%3Cpath%20d%3D%22M319%20202h56l98%20238h-58l-18-50H296l-18%2050h-57l98-238Zm-8%20141h70l-35-94-35%2094Z%22%2F%3E%0A%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E">
@@ -146,7 +146,7 @@ select{
 .opts-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
 @media (min-width:560px){.opts-grid{grid-template-columns:1fr 1fr 1fr}}
 .opts-grid .field{margin:0}
-#customLangWrap,#customFormalityWrap,#customToneWrap{margin-top:10px;display:none}
+#customLangWrap,#customDialectWrap,#customFormalityWrap,#customToneWrap{margin-top:10px;display:none}
 .checks{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}
 .checks label{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
 .checks input{width:18px;height:18px;accent-color:var(--accent)}
@@ -339,6 +339,9 @@ footer{font-size:12px;color:var(--ink-soft);text-align:center;padding:18px 0 8px
       <div class="field"><label for="formalitySel">Formality</label><select id="formalitySel"></select></div>
       <div class="field"><label for="toneSel">Tone / style</label><select id="toneSel"></select></div>
     </div>
+    <div id="customDialectWrap">
+      <input type="text" id="customDialect" placeholder="Type any dialect/region instruction, e.g. Busan 사투리, Kansai-ben, Egyptian Arabic, Taiwan Mandarin…">
+    </div>
     <div id="customFormalityWrap">
       <input type="text" id="customFormality" placeholder="Type any formality/register instruction, e.g. warm but respectful, Gen Z texting, professor-level Korean…">
     </div>
@@ -455,25 +458,126 @@ const TGT_LANGS = [
 ];
 
 const DIALECTS = {
-  Korean: ["Default (Standard / Seoul)"],
-  Japanese: ["Default (Standard)"],
+  Korean: [
+    "Default (Standard South Korean / Seoul)",
+    "Standard South Korean",
+    "Seoul / Gyeonggi Korean",
+    "Busan dialect / Gyeongsang Korean",
+    "Daegu / North Gyeongsang Korean",
+    "South Gyeongsang Korean",
+    "Jeolla / Gwangju Korean",
+    "Chungcheong / Daejeon Korean",
+    "Gangwon Korean",
+    "Jeju Korean / Jeju-influenced Korean",
+    "North Korean standard style",
+    "Yanbian / Korean-Chinese style",
+    "Korean internet/texting style",
+    [CUSTOM, "Insert dialect / region…"]
+  ],
+  Japanese: [
+    "Default (Standard Japanese / Tokyo)",
+    "Standard Japanese",
+    "Tokyo Japanese",
+    "Kansai-ben / Osaka-Kyoto-Kobe style",
+    "Osaka dialect",
+    "Kyoto soft Kansai style",
+    "Kobe style",
+    "Nagoya / Aichi style",
+    "Hiroshima dialect",
+    "Hakata / Fukuoka dialect",
+    "Kyushu Japanese",
+    "Tohoku Japanese",
+    "Hokkaido Japanese",
+    "Okinawan / Ryukyuan-influenced Japanese",
+    "Japanese internet/texting style",
+    [CUSTOM, "Insert dialect / region…"]
+  ],
   Chinese: [
-    "Default", "Mandarin Simplified", "Mandarin Traditional",
-    "Mainland China style", "Taiwan style", "Hong Kong Cantonese style"
+    "Default",
+    "Standard Mandarin Simplified",
+    "Mainland China Mandarin Simplified",
+    "Taiwan Mandarin Traditional",
+    "Hong Kong Traditional Chinese",
+    "Cantonese / Hong Kong Cantonese style",
+    "Cantonese with Jyutping-style wording when useful",
+    "Macau Cantonese style",
+    "Singapore Mandarin",
+    "Malaysian Chinese / Malaysian Mandarin",
+    "Beijing Mandarin style",
+    "Northeastern Mandarin style",
+    "Sichuanese Mandarin style",
+    "Shanghainese / Wu-influenced Chinese",
+    "Hokkien / Taiwanese Minnan-influenced style",
+    "Teochew-influenced style",
+    "Hakka-influenced style",
+    "Classical / literary Chinese style",
+    "Chinese internet slang style",
+    [CUSTOM, "Insert dialect / region…"]
   ],
   Arabic: [
-    "Default", "Modern Standard Arabic", "Classical Arabic style",
-    "Egyptian Arabic", "Levantine Arabic", "Lebanese Arabic", "Syrian Arabic",
-    "Jordanian Arabic", "Palestinian Arabic", "Gulf Arabic", "Saudi Arabic",
-    "Emirati Arabic", "Kuwaiti Arabic", "Iraqi Arabic", "Moroccan Arabic",
-    "Algerian Arabic", "Tunisian Arabic", "Libyan Arabic", "Yemeni Arabic",
-    "Sudanese Arabic", "Arabizi style (Arabic in Latin letters)"
+    "Default",
+    "Modern Standard Arabic",
+    "Classical Arabic style",
+    "White Arabic / pan-Arab neutral colloquial",
+    "Egyptian Arabic",
+    "Cairene Egyptian Arabic",
+    "Upper Egyptian / Sa'idi Arabic",
+    "Levantine Arabic",
+    "Lebanese Arabic",
+    "Syrian Arabic",
+    "Palestinian Arabic",
+    "Jordanian Arabic",
+    "Gulf / Khaleeji Arabic",
+    "Saudi Arabic",
+    "Najdi Saudi Arabic",
+    "Hijazi Saudi Arabic",
+    "Eastern Saudi / Gulf Saudi Arabic",
+    "Emirati Arabic",
+    "Kuwaiti Arabic",
+    "Qatari Arabic",
+    "Bahraini Arabic",
+    "Omani Arabic",
+    "Iraqi Arabic",
+    "Baghdadi Iraqi Arabic",
+    "Moslawi Iraqi Arabic",
+    "Yemeni Arabic",
+    "Sanaani Yemeni Arabic",
+    "Hadhrami Yemeni Arabic",
+    "Sudanese Arabic",
+    "Chadian Arabic",
+    "Maghrebi Arabic",
+    "Moroccan Darija",
+    "Algerian Arabic",
+    "Tunisian Arabic",
+    "Libyan Arabic",
+    "Hassaniya / Mauritanian Arabic",
+    "Arabizi style (Arabic in Latin letters)",
+    [CUSTOM, "Insert dialect / region…"]
   ],
   English: [
-    "Default", "Neutral English", "American English", "British English",
-    "Australian English", "Canadian English"
+    "Default (Neutral international English)",
+    "Neutral international English",
+    "American English",
+    "British English",
+    "Canadian English",
+    "Australian English",
+    "New Zealand English",
+    "Irish English",
+    "Scottish English",
+    "South African English",
+    "Indian English",
+    "Pakistani English",
+    "Singapore English / Singlish-light style",
+    "Malaysian English",
+    "Philippine English",
+    "Nigerian English",
+    "Ghanaian English",
+    "Caribbean English",
+    "AAVE-informed casual style when contextually appropriate",
+    "Internet/texting English",
+    [CUSTOM, "Insert dialect / region…"]
   ],
-  [CUSTOM]: ["Default"]
+  [CUSTOM]: ["Default", [CUSTOM, "Insert dialect / region…"]]
 };
 
 const FORMALITIES = {
@@ -506,7 +610,7 @@ const FORMALITIES = {
     "Academic English", "Natural texting English", "Polite soft English",
     "Direct English", "Flirty English", "Slangy English"
   ],
-  [CUSTOM]: ["Default", "Casual", "Polite", "Formal", "Business", "Academic"]
+  [CUSTOM]: ["Default"]
 };
 
 const TONE_OPTIONS = [
@@ -529,6 +633,7 @@ const el = {
   srcLang: $("srcLang"), tgtLang: $("tgtLang"), swapBtn: $("swapBtn"),
   customLangWrap: $("customLangWrap"), customLang: $("customLang"),
   dialectSel: $("dialectSel"), formalitySel: $("formalitySel"), toneSel: $("toneSel"),
+  customDialectWrap: $("customDialectWrap"), customDialect: $("customDialect"),
   customFormalityWrap: $("customFormalityWrap"), customFormality: $("customFormality"),
   customToneWrap: $("customToneWrap"), customTone: $("customTone"),
   onlyTranslation: $("onlyTranslation"), explainNuance: $("explainNuance"),
@@ -672,8 +777,35 @@ fillSelect(el.tgtLang, TGT_LANGS);
 fillSelect(el.toneSel, TONE_OPTIONS);
 
 function refreshCustomOptionVisibility(){
+  el.customDialectWrap.style.display = el.dialectSel.value === CUSTOM ? "block" : "none";
   el.customFormalityWrap.style.display = el.formalitySel.value === CUSTOM ? "block" : "none";
   el.customToneWrap.style.display = el.toneSel.value === CUSTOM ? "block" : "none";
+}
+function chooseFallbackTarget(excluded){
+  const order = ["Korean", "English", "Japanese", "Chinese", "Arabic", CUSTOM];
+  return order.find(v => v !== excluded && optionExists(el.tgtLang, v)) || CUSTOM;
+}
+function chooseFallbackSource(excluded){
+  const order = ["English", "Korean", "Japanese", "Chinese", "Arabic", "auto"];
+  return order.find(v => v !== excluded && optionExists(el.srcLang, v)) || "auto";
+}
+function enforceLanguagePair(changed){
+  const src = el.srcLang.value;
+  const tgt = el.tgtLang.value;
+  if (src !== "auto" && tgt !== CUSTOM && src === tgt) {
+    if (changed === "tgt") el.srcLang.value = chooseFallbackSource(tgt);
+    else el.tgtLang.value = chooseFallbackTarget(src);
+  }
+}
+function updateLanguageAvailability(){
+  const src = el.srcLang.value;
+  const tgt = el.tgtLang.value;
+  [...el.tgtLang.options].forEach(o => {
+    o.disabled = src !== "auto" && o.value !== CUSTOM && o.value === src;
+  });
+  [...el.srcLang.options].forEach(o => {
+    o.disabled = tgt !== CUSTOM && o.value !== "auto" && o.value === tgt;
+  });
 }
 function refreshDependentSelects(keepValues){
   const tgt = el.tgtLang.value;
@@ -688,6 +820,7 @@ function refreshDependentSelects(keepValues){
   }
   el.customLangWrap.style.display = tgt === CUSTOM ? "block" : "none";
   refreshCustomOptionVisibility();
+  updateLanguageAvailability();
   updateSwapState();
 }
 
@@ -702,7 +835,8 @@ function updateSwapState(){
 function savePrefs(){
   lsSet(LS.prefs, JSON.stringify({
     src: el.srcLang.value, tgt: el.tgtLang.value, custom: el.customLang.value,
-    dialect: el.dialectSel.value, formality: el.formalitySel.value, customFormality: el.customFormality.value,
+    dialect: el.dialectSel.value, customDialect: el.customDialect.value,
+    formality: el.formalitySel.value, customFormality: el.customFormality.value,
     tone: el.toneSel.value, customTone: el.customTone.value,
     onlyTranslation: el.onlyTranslation.checked, explainNuance: el.explainNuance.checked
   }));
@@ -713,24 +847,30 @@ function loadPrefs(){
     if ([...el.srcLang.options].some(o => o.value === p.src)) el.srcLang.value = p.src;
     if ([...el.tgtLang.options].some(o => o.value === p.tgt)) el.tgtLang.value = p.tgt;
     el.customLang.value = p.custom || "";
+    el.customDialect.value = p.customDialect || "";
     el.customFormality.value = p.customFormality || "";
     el.customTone.value = p.customTone || "";
+    enforceLanguagePair("init");
     refreshDependentSelects(false);
     if ([...el.dialectSel.options].some(o => o.value === p.dialect)) el.dialectSel.value = p.dialect;
     if ([...el.formalitySel.options].some(o => o.value === p.formality)) el.formalitySel.value = p.formality;
     if ([...el.toneSel.options].some(o => o.value === p.tone)) el.toneSel.value = p.tone;
     refreshCustomOptionVisibility();
+    updateLanguageAvailability();
     el.onlyTranslation.checked = p.onlyTranslation !== false;
     el.explainNuance.checked = !!p.explainNuance;
   } else {
+    el.srcLang.value = "English";
+    el.tgtLang.value = "Korean";
     refreshDependentSelects(false);
   }
 }
-[el.srcLang, el.dialectSel, el.customLang, el.customFormality, el.customTone,
+[el.dialectSel, el.customLang, el.customDialect, el.customFormality, el.customTone,
  el.onlyTranslation, el.explainNuance].forEach(n => n.addEventListener("change", savePrefs));
-[el.customLang, el.customFormality, el.customTone].forEach(n => n.addEventListener("input", savePrefs));
+[el.customLang, el.customDialect, el.customFormality, el.customTone].forEach(n => n.addEventListener("input", savePrefs));
 el.formalitySel.addEventListener("change", () => { refreshCustomOptionVisibility(); savePrefs(); });
 el.toneSel.addEventListener("change", () => { refreshCustomOptionVisibility(); savePrefs(); });
+el.dialectSel.addEventListener("change", () => { refreshCustomOptionVisibility(); savePrefs(); });
 // The two modes are mutually exclusive
 el.explainNuance.addEventListener("change", () => {
   if (el.explainNuance.checked) el.onlyTranslation.checked = false;
@@ -740,8 +880,8 @@ el.onlyTranslation.addEventListener("change", () => {
   if (el.onlyTranslation.checked) el.explainNuance.checked = false;
   savePrefs();
 });
-el.srcLang.addEventListener("change", updateSwapState);
-el.tgtLang.addEventListener("change", () => { refreshDependentSelects(true); savePrefs(); });
+el.srcLang.addEventListener("change", () => { enforceLanguagePair("src"); refreshDependentSelects(true); savePrefs(); });
+el.tgtLang.addEventListener("change", () => { enforceLanguagePair("tgt"); refreshDependentSelects(true); savePrefs(); });
 
 /* ---------- Swap ---------- */
 el.swapBtn.addEventListener("click", () => {
@@ -825,6 +965,10 @@ function selectedTargetLanguage(){
   if (el.tgtLang.value === CUSTOM) return el.customLang.value.trim();
   return el.tgtLang.value;
 }
+function selectedDialect(){
+  if (el.dialectSel.value === CUSTOM) return el.customDialect.value.trim() || "Custom dialect / region";
+  return el.dialectSel.value || "Default";
+}
 function selectedFormality(){
   if (el.formalitySel.value === CUSTOM) return el.customFormality.value.trim() || "Custom formality / register";
   return el.formalitySel.value || "Default";
@@ -836,7 +980,7 @@ function selectedToneStyle(){
 function buildPrompt(text, modifier){
   const src = el.srcLang.value === "auto" ? "the auto-detected source language" : el.srcLang.value;
   const tgt = selectedTargetLanguage();
-  const dialect = el.dialectSel.value || "Default";
+  const dialect = selectedDialect();
   const formality = selectedFormality();
   const tone = selectedToneStyle();
   const nuance = el.explainNuance.checked;
@@ -940,6 +1084,10 @@ async function translate(modifier){
   if (!text) { showError("Type or paste some text first — the input is empty."); return; }
   if (el.tgtLang.value === CUSTOM && !el.customLang.value.trim()) {
     showError("You chose “Insert language” — type the target language name in the box below the dropdowns.");
+    return;
+  }
+  if (el.dialectSel.value === CUSTOM && !el.customDialect.value.trim()) {
+    showError("You chose “Insert dialect / region” — type your custom dialect or region instruction.");
     return;
   }
   if (el.formalitySel.value === CUSTOM && !el.customFormality.value.trim()) {
@@ -1064,6 +1212,7 @@ loadPrefs();
 refreshKeyStatus();
 updateCounter();
 renderHistory();
+updateLanguageAvailability();
 updateSwapState();
 </script>
 </body>
