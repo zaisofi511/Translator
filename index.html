@@ -1,531 +1,1922 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
+<!doctype html>
+
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="theme-color" content="#0ea5e9" />
-  <title>Translator</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Favicon (blue background badge with provided icon centered) -->
-  <link rel="icon" href="./image.png" type="image/png" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101827">
+  <meta name="color-scheme" content="dark light">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="AI Translator">
+  <meta name="application-name" content="AI Translator">
+  <meta name="description" content="A browser-only Gemini-powered multilingual translator.">
+  <title>AI Translator</title>
+
+  <link rel="icon" href="image.png" type="image/png">
+  <link rel="apple-touch-icon" href="image.png">
+
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href='data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"%3E%3Cdefs%3E%3ClinearGradient id="g" x1="0" x2="1" y1="0" y2="1"%3E%3Cstop stop-color="%237c3aed"/%3E%3Cstop offset="1" stop-color="%2306b6d4"/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="512" height="512" rx="112" fill="url(%23g)"/%3E%3Ccircle cx="365" cy="145" r="48" fill="white" opacity=".18"/%3E%3Cpath fill="white" d="M121 143h154v43h-56c-8 32-22 59-42 83 19 13 42 23 68 31l-25 39c-29-10-54-24-75-42-23 19-51 35-84 47l-22-41c29-9 54-22 74-38-15-18-28-39-37-63h46c6 12 13 23 23 34 13-15 23-32 29-50H121v-43Zm24-70h50v42h-50V73Zm177 128h54l97 238h-57l-18-50h-101l-18 50h-55l98-238Zm-8 141h67l-34-92-33 92Z"/%3E%3C/svg%3E'
+  >
+
   <style>
-    :root { color-scheme: dark light; }
-    body { font-family: 'Inter', sans-serif; }
-    /* Smooth show/hide */
-    .fade-in { animation: fadeIn .25s ease-in; }
-    @keyframes fadeIn { from {opacity:0; transform: translateY(2px)} to {opacity:1; transform: translateY(0)} }
-    /* Spinner */
-    .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg) } }
+    :root {
+      --bg: #f6f7fb;
+      --panel: #ffffff;
+      --panel-2: #eef1f7;
+      --text: #101827;
+      --muted: #667085;
+      --border: #d9dee8;
+      --accent: #4f46e5;
+      --accent-2: #0891b2;
+      --accent-text: #ffffff;
+      --danger: #b42318;
+      --danger-bg: #fff1f0;
+      --success: #067647;
+      --success-bg: #ecfdf3;
+      --warning: #b54708;
+      --warning-bg: #fffaeb;
+      --shadow: 0 14px 35px rgba(16, 24, 39, 0.10);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --focus: 0 0 0 4px rgba(79, 70, 229, 0.22);
+      --textarea-min: 230px;
+      --font: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Noto Sans", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0b1020;
+      --panel: #121a2c;
+      --panel-2: #192236;
+      --text: #f7f7fb;
+      --muted: #a8b0c2;
+      --border: #2a3449;
+      --accent: #8b5cf6;
+      --accent-2: #22d3ee;
+      --accent-text: #ffffff;
+      --danger: #f97066;
+      --danger-bg: #3b1515;
+      --success: #32d583;
+      --success-bg: #062d1d;
+      --warning: #fdb022;
+      --warning-bg: #3a2607;
+      --shadow: 0 18px 45px rgba(0, 0, 0, 0.34);
+      --focus: 0 0 0 4px rgba(139, 92, 246, 0.26);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      background:
+        radial-gradient(circle at top left, rgba(79, 70, 229, 0.18), transparent 36rem),
+        radial-gradient(circle at top right, rgba(8, 145, 178, 0.14), transparent 34rem),
+        var(--bg);
+      color: var(--text);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.58;
+    }
+
+    .app {
+      width: min(1220px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 calc(92px + env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid;
+      place-items: center;
+      color: white;
+      overflow: hidden;
+      flex: 0 0 auto;
+    }
+
+    .brand-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .brand-icon-fallback {
+      width: 28px;
+      height: 28px;
+      display: block;
+    }
+
+    h1 {
+      font-size: clamp(1.35rem, 4vw, 2.05rem);
+      line-height: 1.1;
+      margin: 0;
+      letter-spacing: -0.035em;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin: 4px 0 0;
+      font-size: 0.94rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex: 0 0 auto;
+    }
+
+    .btn,
+    .icon-btn,
+    .primary-btn,
+    .soft-btn,
+    .danger-btn {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--text);
+      min-height: 44px;
+      padding: 0 15px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, opacity 160ms ease;
+      user-select: none;
+    }
+
+    .icon-btn {
+      width: 44px;
+      padding: 0;
+      font-size: 1.05rem;
+    }
+
+    .btn:hover,
+    .icon-btn:hover,
+    .soft-btn:hover {
+      border-color: color-mix(in srgb, var(--accent) 46%, var(--border));
+      transform: translateY(-1px);
+    }
+
+    .btn:focus-visible,
+    .icon-btn:focus-visible,
+    .primary-btn:focus-visible,
+    .soft-btn:focus-visible,
+    .danger-btn:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    summary:focus-visible {
+      outline: none;
+      box-shadow: var(--focus);
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: var(--accent-text);
+      border-color: transparent;
+      font-weight: 750;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+    }
+
+    .soft-btn {
+      background: var(--panel-2);
+    }
+
+    .danger-btn {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border-color: color-mix(in srgb, var(--danger) 28%, var(--border));
+    }
+
+    .danger-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--danger);
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .card {
+      background: color-mix(in srgb, var(--panel) 94%, transparent);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .controls-card {
+      padding: 14px;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    label,
+    .label {
+      font-weight: 700;
+      color: var(--text);
+      font-size: 0.86rem;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+
+    select,
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      min-height: 46px;
+      padding: 0 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: var(--textarea-min);
+      resize: vertical;
+      padding: 15px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      line-height: 1.55;
+      font-size: 1rem;
+    }
+
+    textarea[readonly] {
+      background: color-mix(in srgb, var(--panel-2) 45%, var(--panel));
+    }
+
+    select:disabled,
+    input:disabled {
+      opacity: 0.65;
+    }
+
+    .swap-wrap {
+      display: flex;
+      justify-content: center;
+      padding-bottom: 1px;
+    }
+
+    .advanced-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .custom-language-row {
+      display: none;
+      margin-top: 12px;
+    }
+
+    .custom-language-row.active {
+      display: grid;
+    }
+
+    .toggle-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+      align-items: center;
+    }
+
+    .toggle-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--text);
+      font-weight: 650;
+      font-size: 0.9rem;
+    }
+
+    .toggle-pill input {
+      accent-color: var(--accent);
+      width: 17px;
+      height: 17px;
+    }
+
+    .panes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .pane {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .pane-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .pane-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .counter {
+      color: var(--muted);
+      font-size: 0.83rem;
+    }
+
+    .main-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+    }
+
+    .main-actions .primary-btn {
+      min-width: 190px;
+    }
+
+    .status {
+      display: none;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      line-height: 1.45;
+      font-size: 0.93rem;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .status.active {
+      display: block;
+    }
+
+    .status.error {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border-color: color-mix(in srgb, var(--danger) 25%, transparent);
+    }
+
+    .status.success {
+      background: var(--success-bg);
+      color: var(--success);
+      border-color: color-mix(in srgb, var(--success) 25%, transparent);
+    }
+
+    .status.warning {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border-color: color-mix(in srgb, var(--warning) 25%, transparent);
+    }
+
+    details.settings {
+      overflow: hidden;
+    }
+
+    details.settings summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-weight: 800;
+    }
+
+    details.settings summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .summary-chevron {
+      transition: transform 160ms ease;
+    }
+
+    details[open] .summary-chevron {
+      transform: rotate(180deg);
+    }
+
+    .settings-body {
+      border-top: 1px solid var(--border);
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 12px;
+    }
+
+    .key-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+
+    .settings-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .note {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      color: var(--muted);
+      background: color-mix(in srgb, var(--panel-2) 55%, transparent);
+      line-height: 1.45;
+      font-size: 0.88rem;
+    }
+
+    .history-card {
+      overflow: hidden;
+    }
+
+    .history-head {
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .history-head h2 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: -0.015em;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 0;
+    }
+
+    .empty-history {
+      padding: 18px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .history-item {
+      padding: 14px 16px;
+      display: grid;
+      gap: 9px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-meta {
+      color: var(--muted);
+      font-size: 0.8rem;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .history-texts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .history-text {
+      background: color-mix(in srgb, var(--panel-2) 60%, transparent);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      line-height: 1.45;
+      max-height: 118px;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: 0.9rem;
+    }
+
+    .history-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .spinner {
+      width: 17px;
+      height: 17px;
+      border: 2px solid rgba(255, 255, 255, 0.42);
+      border-top-color: white;
+      border-radius: 50%;
+      display: none;
+      animation: spin 750ms linear infinite;
+    }
+
+    .is-loading .spinner {
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .kbd {
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      background: var(--panel);
+      border-radius: 7px;
+      padding: 1px 6px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .mobile-sticky {
+      display: none;
+    }
+
+    @media (max-width: 860px) {
+      .app {
+        width: min(100% - 20px, 680px);
+        padding-top: 14px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .subtitle {
+        white-space: normal;
+      }
+
+      .controls-grid,
+      .advanced-grid,
+      .settings-grid,
+      .panes,
+      .history-texts {
+        grid-template-columns: 1fr;
+      }
+
+      .swap-wrap {
+        padding: 0;
+      }
+
+      .swap-wrap .icon-btn {
+        transform: rotate(90deg);
+      }
+
+      .pane-actions {
+        justify-content: flex-start;
+      }
+
+      .main-actions .primary-btn {
+        width: 100%;
+      }
+
+      .desktop-translate {
+        display: none;
+      }
+
+      .mobile-sticky {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 30;
+        display: block;
+        padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+        background: color-mix(in srgb, var(--bg) 86%, transparent);
+        backdrop-filter: blur(14px);
+        border-top: 1px solid var(--border);
+      }
+
+      .mobile-sticky .primary-btn {
+        width: 100%;
+        min-height: 52px;
+        border-radius: 16px;
+      }
+
+      :root {
+        --textarea-min: 190px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .topbar {
+        flex-direction: column;
+      }
+
+      .top-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .top-actions .btn {
+        flex: 1;
+      }
+
+      .brand-icon {
+        width: 42px;
+        height: 42px;
+      }
+
+      .btn,
+      .soft-btn,
+      .danger-btn,
+      .primary-btn {
+        padding-inline: 12px;
+      }
+
+      .history-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
   </style>
-  <script>
-    // Respect system dark mode; default to dark if no preference stored
-    try {
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && prefersDark)) {
-        document.documentElement.classList.add('dark');
-      } else if (localStorage.theme === 'light') {
-        document.documentElement.classList.remove('dark');
-      } // else keep default 'dark' class from HTML
-    } catch (e) {}
-  </script>
+
 </head>
-<body class="min-h-screen bg-neutral-900 text-neutral-200 sm:p-6 p-3">
-  <div class="max-w-3xl mx-auto">
-    <!-- Header / App badge -->
-    <div class="flex items-center gap-3 mb-5">
-      <div class="w-10 h-10 rounded-2xl flex items-center justify-center shadow ring-1 ring-black/10" style="background: #0ea5e9">
-        <img src="image.png" alt="App Icon" class="w-6 h-6 object-contain" />
+
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <img src="image.png" alt="" onerror="this.remove();document.querySelector('.brand-icon-fallback').style.display='block';">
+          <svg class="brand-icon-fallback" style="display:none" viewBox="0 0 64 64" role="img" aria-label="">
+            <path fill="currentColor" d="M10 15h24v6h-9c-1.3 5-3.5 9.2-6.6 12.8 3 2 6.6 3.7 10.8 4.9l-3.7 5.8a42 42 0 0 1-11.5-6.3A48 48 0 0 1 2.5 45l-3.2-6.2c4.7-1.4 8.6-3.4 11.8-6.1A38.3 38.3 0 0 1 5.2 23h7a26 26 0 0 0 3.6 5.8A25 25 0 0 0 20.3 21H10v-6Zm4-11h7v7h-7V4Zm31 25h7l13 31h-7.8l-2.4-6.8H41.2L38.8 60h-7.5L45 29Zm-2 18.2h9.7L48 35.2l-5 12Z"/>
+          </svg>
+        </div>
+        <div>
+          <h1>AI Translator</h1>
+          <p class="subtitle">Browser-only Gemini translator for Korean, Japanese, Chinese, Arabic, and English.</p>
+        </div>
       </div>
-      <h1 class="text-2xl font-semibold tracking-tight">Translator</h1>
-      <div class="ml-auto text-xs text-neutral-400">Dark mode ready</div>
+
+```
+  <div class="top-actions">
+    <button class="btn" id="themeBtn" type="button" aria-label="Toggle dark or light mode">Toggle theme</button>
+    <button class="icon-btn" id="settingsOpenBtn" type="button" aria-label="Open settings">⚙</button>
+  </div>
+</header>
+
+<main class="grid">
+  <section class="card controls-card" aria-label="Translation controls">
+    <div class="controls-grid">
+      <div class="field">
+        <label for="sourceLanguage">Source language</label>
+        <select id="sourceLanguage">
+          <option value="Auto-detect">Auto-detect</option>
+          <option value="English">English</option>
+          <option value="Korean">Korean</option>
+          <option value="Japanese">Japanese</option>
+          <option value="Chinese">Chinese</option>
+          <option value="Arabic">Arabic</option>
+        </select>
+      </div>
+
+      <div class="swap-wrap">
+        <button class="icon-btn" id="swapBtn" type="button" title="Swap source and target languages" aria-label="Swap source and target languages">⇄</button>
+      </div>
+
+      <div class="field">
+        <label for="targetLanguage">Target language</label>
+        <select id="targetLanguage">
+          <option value="English">English</option>
+          <option value="Korean">Korean</option>
+          <option value="Japanese">Japanese</option>
+          <option value="Chinese">Chinese</option>
+          <option value="Arabic">Arabic</option>
+          <option value="Insert Language">Insert Language</option>
+        </select>
+      </div>
     </div>
 
-    <div class="bg-neutral-800/60 backdrop-blur rounded-2xl shadow-xl ring-1 ring-white/5 p-4 sm:p-6 space-y-5">
-      <!-- Provider status + Configure -->
-      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-        <div class="text-sm font-medium">
-          <span id="providerStatusText" class="text-red-400">Configure Translator ⚠</span>
-        </div>
-        <button id="toggleProviderBtn" class="sm:ml-auto inline-flex items-center justify-center px-3 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-sm">
-          Configure API
-          <svg id="providerChevron" class="w-4 h-4 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-      </div>
-
-      <!-- API Key Configuration (same format as before) -->
-      <div id="apiConfigSection" class="hidden">
-        <div class="rounded-xl border border-sky-500/30 bg-sky-500/10 p-4 space-y-3 fade-in">
-          <div class="flex items-center justify-between">
-            <h3 class="text-base font-medium text-sky-300">Grok API Configuration</h3>
-          </div>
-          <div class="space-y-3">
-            <div class="flex flex-col sm:flex-row gap-3">
-              <div class="flex-1">
-                <input type="password" id="apiKeyInput" placeholder="Enter your Groq API key..." class="w-full p-3 rounded-lg bg-neutral-900 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-sky-500" />
-              </div>
-              <button id="toggleApiKey" class="px-3 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600" title="Show/Hide API key">
-                <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-              </button>
-              <button id="saveApiKey" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium">Save Key</button>
-            </div>
-            <!-- NEW: model input -->
-            <div class="space-y-2 mt-3">
-              <label class="block text-xs text-neutral-300">Model</label>
-              <input
-                type="text"
-                id="modelInput"
-                placeholder="Enter model (default: moonshotai/kimi-k2-instruct)"
-                class="w-full p-3 rounded-lg bg-neutral-900 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
-          </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Language Selection (mobile-first) -->
-      <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-3">
-        <div>
-          <label class="block text-xs text-neutral-400 mb-1">From</label>
-          <select id="inputLang" class="w-full p-3 rounded-lg bg-neutral-900 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-sky-500"></select>
-        </div>
-        <div class="sm:self-end sm:pb-1">
-          <button id="swapBtn" class="p-2 rounded-lg bg-neutral-700 hover:bg-neutral-600" title="Swap languages">
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-          </button>
-        </div>
-        <div>
-          <label class="block text-xs text-neutral-400 mb-1">To</label>
-          <select id="outputLang" class="w-full p-3 rounded-lg bg-neutral-900 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-sky-500"></select>
-        </div>
-      </div>
-
-      <!-- Korean Formality & Dialect (preserved) -->
-      <div id="formalityContainer" class="hidden space-y-4">
-        <div>
-          <label class="block text-xs text-neutral-400 mb-1">Korean Formality Level</label>
-          <select id="formalityLevel" class="w-full p-3 rounded-lg bg-neutral-900 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-sky-500">
-            <option value="하소서체 (Hasoseo-che)">하소서체 (Hasoseo-che) — Extremely formal, archaic</option>
-            <option value="하십시오체 (Hasipsio-che)">십시오체 (Hasipsio-che) — Formal polite</option>
-            <option value="해요체 (Haeyo-che)" selected>해요체 (Haeyo-che) — Polite informal (default)</option>
-            <option value="하게체 (Hage-che)">하게체 (Hage-che) — Semi-formal</option>
-            <option value="하오체 (Hao-che)">하오체 (Hao-che) — Old polite</option>
-            <option value="한다체 (Handa-che)">한다체 (Handa-che) — Plain/neutral</option>
-            <option value="해체 (Hae-che)">해체 (Hae-che) — Casual/intimate (spoken)</option>
-            <option value="반말체 (Banmal-che)">반말체 (Banmal-che) — Pure casual/texting style (chat/slang)</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs text-neutral-400 mb-1">Korean Dialect (Satoori)</label>
-          <select id="dialectLevel" class="w-full p-3 rounded-lg bg-neutral-900 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-sky-500">
-            <option value="Standard Korean" selected>Standard Korean (표준어) — No dialect</option>
-            <option value="Seoul/Gyeonggi Dialect">Seoul/Gyeonggi Dialect (서울/경기 사투리)</option>
-            <option value="Gangwon Dialect">Gangwon Dialect (강원 사투리)</option>
-            <option value="Chungcheong Dialect">Chungcheong Dialect (충청 사투리)</option>
-            <option value="Gyeongsang Dialect">Gyeongsang Dialect (경상 사투리)</option>
-            <option value="Jeolla Dialect">Jeolla Dialect (전라 사투리)</option>
-            <option value="Jeju Dialect">Jeju Dialect (제주 사투리 / 제주어)</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Japanese Formality & Dialect -->
-      <div id="jpFormalityContainer" class="hidden space-y-4">
-        <div>
-          <label class="block text-xs text-neutral-400 mb-1">Japanese Formality Level</label>
-          <select id="jpFormalityLevel" class="w-full p-3 rounded-lg bg-neutral-900 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-sky-500">
-            <option value="Plain Form">普通語 (Futsūgo) / 砕けた (Kudaketa) — Plain form</option>
-            <option value="Casual">タメ語 (Tamego) — Casual between equals</option>
-            <option value="Polite">丁寧語 (Teineigo) — Polite</option>
-            <option value="Respectful">尊敬語 (Sonkeigo) — Respectful</option>
-            <option value="Humble">謙譲語 (Kenjōgo) — Humble</option>
-            <option value="Casual Slang">ネットスラング / 若者言葉 — Casual slang & texting</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-xs text-neutral-400 mb-1">Japanese Dialect</label>
-          <select id="jpDialectLevel" class="w-full p-3 rounded-lg bg-neutral-900 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-sky-500">
-            <optgroup label="Eastern Japanese Dialects">
-              <option value="Kanto">関東方言 (Kanto Dialect)</option>
-              <option value="Tohoku">東北方言 (Tōhoku Dialect)</option>
-              <option value="Hokkaido">北海道方言 (Hokkaidō Dialect)</option>
-            </optgroup>
-            <optgroup label="Western Japanese Dialects">
-              <option value="Kansai">関西方言 (Kansai Dialect)</option>
-              <option value="Chugoku">中国方言 (Chūgoku Dialect)</option>
-              <option value="Shikoku">四国方言 (Shikoku Dialect)</option>
-            </optgroup>
-            <optgroup label="Kyūshū Dialects">
-              <option value="Hakata">博多方言 (Hakata Dialect)</option>
-              <option value="Kagoshima">鹿児島方言 (Kagoshima Dialect)</option>
-            </optgroup>
-            <optgroup label="Hachijo Dialect">
-              <option value="Hachijo">八丈方言 (Hachijō Dialect)</option>
-            </optgroup>
-          </select>
-        </div>
-      </div>
-
-      <!-- Text Areas -->
-      <div class="grid sm:grid-cols-2 gap-4">
-        <div class="space-y-2">
-          <label class="block text-xs text-neutral-400">Input Text</label>
-          <textarea id="inputText" placeholder="Enter text to translate..." class="w-full h-40 p-4 rounded-lg bg-neutral-900 border border-neutral-700 resize-y focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
-          <div id="charCount" class="text-xs text-neutral-400">0 characters</div>
-        </div>
-        <div class="space-y-2">
-          <label class="block text-xs text-neutral-400">Translation</label>
-          <textarea id="outputText" placeholder="Translation will appear here..." class="w-full h-40 p-4 rounded-lg bg-neutral-900 border border-neutral-700 resize-y" readonly></textarea>
-        </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="flex flex-col sm:flex-row gap-3">
-        <button id="translateBtn" class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium disabled:opacity-60 disabled:cursor-not-allowed">
-          <span id="translateText">Translate</span>
-          <div id="loadingSpinner" class="spinner hidden"></div>
-        </button>
-        <button id="copyBtn" class="flex-1 px-4 py-3 rounded-lg bg-neutral-700 hover:bg-neutral-600">Copy Translation</button>
-        <button id="clearBtn" class="px-4 py-3 rounded-lg bg-rose-600/20 hover:bg-rose-600/30 text-rose-200">Clear</button>
-      </div>
-
-      <!-- Messages -->
-      <div id="messageBox" class="hidden p-3 rounded-lg text-sm"></div>
+    <div class="custom-language-row field" id="customLanguageRow">
+      <label for="customTargetLanguage">Custom target language</label>
+      <input id="customTargetLanguage" type="text" placeholder="Type any language, for example Spanish, Lebanese Arabic, French...">
     </div>
+
+    <div class="advanced-grid">
+      <div class="field">
+        <label for="dialect">Dialect/region</label>
+        <select id="dialect"></select>
+      </div>
+
+      <div class="field">
+        <label for="formality">Formality level</label>
+        <select id="formality"></select>
+      </div>
+
+      <div class="field">
+        <label for="tone">Tone/style</label>
+        <select id="tone">
+          <option>Natural</option>
+          <option>Literal</option>
+          <option>Smooth native</option>
+          <option>Casual</option>
+          <option>Polite</option>
+          <option>Formal</option>
+          <option>Romantic/flirty</option>
+          <option>Friendly</option>
+          <option>Professional</option>
+          <option>Academic</option>
+          <option>Text-message style</option>
+          <option>Social-media style</option>
+          <option>Direct</option>
+          <option>Soft and indirect</option>
+          <option>Funny</option>
+          <option>Serious</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="toggle-row" aria-label="Output options">
+      <label class="toggle-pill" for="returnOnlyMode">
+        <input id="returnOnlyMode" type="checkbox" checked>
+        Return only translation
+      </label>
+
+      <label class="toggle-pill" for="explainMode">
+        <input id="explainMode" type="checkbox">
+        Explain nuance
+      </label>
+
+      <span class="hint">Shortcut: <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> or <span class="kbd">Cmd</span> + <span class="kbd">Enter</span></span>
+    </div>
+  </section>
+
+  <section class="panes" aria-label="Input and output">
+    <div class="card pane">
+      <div class="pane-head">
+        <div>
+          <div class="label">Input</div>
+          <div class="counter" id="charCounter">0 characters</div>
+        </div>
+
+        <div class="pane-actions">
+          <button class="soft-btn" id="pasteBtn" type="button">Paste</button>
+          <button class="soft-btn" id="clearInputBtn" type="button">Clear input</button>
+        </div>
+      </div>
+
+      <textarea id="inputText" spellcheck="true" placeholder="Type or paste text to translate..."></textarea>
+    </div>
+
+    <div class="card pane">
+      <div class="pane-head">
+        <div>
+          <div class="label">Output</div>
+          <div class="counter" id="outputCounter">0 characters</div>
+        </div>
+
+        <div class="pane-actions">
+          <button class="soft-btn" id="copyBtn" type="button">Copy output</button>
+          <button class="soft-btn" id="clearAllBtn" type="button">Clear all</button>
+        </div>
+      </div>
+
+      <textarea id="outputText" readonly placeholder="Translation will appear here..."></textarea>
+    </div>
+  </section>
+
+  <section class="card main-actions" aria-label="Translation actions">
+    <button class="primary-btn desktop-translate" id="translateBtn" type="button">
+      <span class="spinner" aria-hidden="true"></span>
+      <span class="translate-label">Translate</span>
+    </button>
+
+    <button class="soft-btn" id="naturalBtn" type="button">Retranslate more naturally</button>
+    <button class="soft-btn" id="politeBtn" type="button">Make more polite</button>
+    <button class="soft-btn" id="casualBtn" type="button">Make more casual</button>
+  </section>
+
+  <div class="status" id="statusBox" role="status" aria-live="polite"></div>
+
+  <details class="card settings" id="settingsDetails">
+    <summary>
+      <span>Settings and privacy</span>
+      <span class="summary-chevron" aria-hidden="true">⌄</span>
+    </summary>
+
+    <div class="settings-body">
+      <div class="settings-grid">
+        <div class="field">
+          <label for="apiKeyInput">Gemini API key</label>
+          <div class="key-row">
+            <input id="apiKeyInput" type="password" autocomplete="off" placeholder="Paste your Gemini API key">
+            <button class="icon-btn" id="toggleKeyBtn" type="button" aria-label="Reveal or hide API key">👁</button>
+          </div>
+          <div class="hint" id="keyStatus">No key saved.</div>
+        </div>
+
+        <div class="field">
+          <label for="modelName">Gemini model</label>
+          <input id="modelName" type="text" spellcheck="false" value="gemini-2.5-flash">
+          <div class="hint">Editable. Example: gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash.</div>
+        </div>
+      </div>
+
+      <div class="settings-actions">
+        <button class="primary-btn" id="saveKeyBtn" type="button">Save key locally</button>
+        <button class="soft-btn" id="saveModelBtn" type="button">Save model</button>
+        <button class="danger-btn" id="deleteKeyBtn" type="button">Delete saved key</button>
+      </div>
+
+      <div class="note">
+        Privacy note: this app has no backend, no database, no cookies, no analytics, and no external tracking. It saves only your API key, model name, theme, preferences, and local translation history in this browser using localStorage.
+      </div>
+
+      <div class="note">
+        Security warning: browser-only apps cannot fully hide API keys from someone using the same device or inspecting the page. Your key is sent only to the Gemini API request, but it is still visible inside your own browser. GitHub Pages is public, so this setup is best for personal use and is not suitable for shared public production apps.
+      </div>
+    </div>
+  </details>
+
+  <section class="card history-card" aria-label="Translation history">
+    <div class="history-head">
+      <div>
+        <h2>Local history</h2>
+        <div class="hint">Stored only in this browser. Maximum 20 items.</div>
+      </div>
+      <button class="danger-btn" id="deleteHistoryBtn" type="button">Delete history</button>
+    </div>
+
+    <div class="history-list" id="historyList"></div>
+  </section>
+</main>
+```
+
+  </div>
+
+  <div class="mobile-sticky">
+    <button class="primary-btn" id="mobileTranslateBtn" type="button">
+      <span class="spinner" aria-hidden="true"></span>
+      <span class="translate-label">Translate</span>
+    </button>
   </div>
 
   <script>
-    // ===== Configuration =====
-    const CONFIG = {
-        API_URL: "https://api.groq.com/openai/v1/chat/completions",
-        MAX_CHARS: 5000,
-        API_KEY_STORAGE: 'groq_api_key'
-    };
+    (() => {
+      "use strict";
 
+      const STORAGE = {
+        apiKey: "translator.geminiApiKey",
+        model: "translator.geminiModel",
+        theme: "translator.theme",
+        prefs: "translator.preferences",
+        history: "translator.history"
+      };
 
+      const DEFAULT_MODEL = "gemini-2.5-flash";
+      const MAX_HISTORY = 20;
 
-    // ===== API Key Manager (same behavior/format) =====
-    const ApiKeyManager = {
-      save(key){ try{ localStorage.setItem(CONFIG.API_KEY_STORAGE, btoa(key)); return true }catch{ return false } },
-      load(){ try{ const e = localStorage.getItem(CONFIG.API_KEY_STORAGE); return e ? atob(e) : null }catch{ return null } },
-      remove(){ localStorage.removeItem(CONFIG.API_KEY_STORAGE) },
-      isValid(k){ return k && k.startsWith('gsk_') }
+      const styleOptionsByLanguage = {
+        Korean: [
+          "해요체, polite casual",
+          "합쇼체, formal polite",
+          "반말, casual informal",
+          "존댓말, respectful speech",
+          "음슴체, conversational text-speech",
+          "Written formal Korean",
+          "Natural texting Korean",
+          "Dating/flirting Korean",
+          "Business Korean",
+          "Academic Korean",
+          "Very soft/polite Korean",
+          "Direct Korean",
+          "Korean slang/casual chat"
+        ],
+        Japanese: [
+          "Casual Japanese",
+          "Polite Japanese, です・ます",
+          "Formal business Japanese",
+          "Keigo",
+          "Sonkeigo",
+          "Kenjougo",
+          "Natural texting Japanese",
+          "Masculine casual tone",
+          "Feminine soft tone",
+          "Anime-like casual tone",
+          "Academic Japanese",
+          "Direct Japanese",
+          "Soft indirect Japanese"
+        ],
+        Chinese: [
+          "Mandarin Simplified",
+          "Mandarin Traditional",
+          "Mainland China style",
+          "Taiwan style",
+          "Hong Kong Cantonese style",
+          "Casual chat Chinese",
+          "Formal written Chinese",
+          "Business Chinese",
+          "Academic Chinese",
+          "Internet slang style",
+          "Soft polite Chinese",
+          "Direct Chinese"
+        ],
+        Arabic: [
+          "Modern Standard Arabic",
+          "Classical Arabic style",
+          "Egyptian Arabic",
+          "Levantine Arabic",
+          "Lebanese Arabic",
+          "Syrian Arabic",
+          "Jordanian Arabic",
+          "Palestinian Arabic",
+          "Gulf Arabic",
+          "Saudi Arabic",
+          "Emirati Arabic",
+          "Kuwaiti Arabic",
+          "Iraqi Arabic",
+          "Moroccan Arabic",
+          "Algerian Arabic",
+          "Tunisian Arabic",
+          "Libyan Arabic",
+          "Yemeni Arabic",
+          "Sudanese Arabic",
+          "Casual texting Arabic",
+          "Formal Arabic",
+          "Business Arabic",
+          "Academic Arabic",
+          "Arabizi style, Arabic written with Latin letters"
+        ],
+        English: [
+          "Neutral English",
+          "American English",
+          "British English",
+          "Australian English",
+          "Canadian English",
+          "Casual English",
+          "Formal English",
+          "Business English",
+          "Academic English",
+          "Natural texting English",
+          "Polite soft English",
+          "Direct English",
+          "Flirty English",
+          "Slangy English"
+        ],
+        Other: [
+          "Default native variety",
+          "Neutral standard",
+          "Casual spoken",
+          "Formal written",
+          "Business style",
+          "Academic style",
+          "Natural texting",
+          "Soft polite",
+          "Direct"
+        ]
+      };
 
-    };
+      const els = {
+        sourceLanguage: document.getElementById("sourceLanguage"),
+        targetLanguage: document.getElementById("targetLanguage"),
+        customTargetLanguage: document.getElementById("customTargetLanguage"),
+        customLanguageRow: document.getElementById("customLanguageRow"),
+        dialect: document.getElementById("dialect"),
+        formality: document.getElementById("formality"),
+        tone: document.getElementById("tone"),
+        returnOnlyMode: document.getElementById("returnOnlyMode"),
+        explainMode: document.getElementById("explainMode"),
+        inputText: document.getElementById("inputText"),
+        outputText: document.getElementById("outputText"),
+        charCounter: document.getElementById("charCounter"),
+        outputCounter: document.getElementById("outputCounter"),
+        translateBtn: document.getElementById("translateBtn"),
+        mobileTranslateBtn: document.getElementById("mobileTranslateBtn"),
+        naturalBtn: document.getElementById("naturalBtn"),
+        politeBtn: document.getElementById("politeBtn"),
+        casualBtn: document.getElementById("casualBtn"),
+        pasteBtn: document.getElementById("pasteBtn"),
+        copyBtn: document.getElementById("copyBtn"),
+        clearInputBtn: document.getElementById("clearInputBtn"),
+        clearAllBtn: document.getElementById("clearAllBtn"),
+        swapBtn: document.getElementById("swapBtn"),
+        statusBox: document.getElementById("statusBox"),
+        themeBtn: document.getElementById("themeBtn"),
+        settingsDetails: document.getElementById("settingsDetails"),
+        settingsOpenBtn: document.getElementById("settingsOpenBtn"),
+        apiKeyInput: document.getElementById("apiKeyInput"),
+        toggleKeyBtn: document.getElementById("toggleKeyBtn"),
+        keyStatus: document.getElementById("keyStatus"),
+        modelName: document.getElementById("modelName"),
+        saveKeyBtn: document.getElementById("saveKeyBtn"),
+        saveModelBtn: document.getElementById("saveModelBtn"),
+        deleteKeyBtn: document.getElementById("deleteKeyBtn"),
+        historyList: document.getElementById("historyList"),
+        deleteHistoryBtn: document.getElementById("deleteHistoryBtn")
+      };
 
-    // ===== Model Manager =====
-    const ModelManager = {
-      STORAGE_KEY: 'groq_model',
-      defaultModel: 'moonshotai/kimi-k2-instruct',
-      save(name) {
+      function safeLocalStorageGet(key, fallback = "") {
         try {
-          if (!name) {
-            localStorage.removeItem(this.STORAGE_KEY);
-            return true;
-          }
-          localStorage.setItem(this.STORAGE_KEY, name);
+          return localStorage.getItem(key) ?? fallback;
+        } catch {
+          return fallback;
+        }
+      }
+
+      function safeLocalStorageSet(key, value) {
+        try {
+          localStorage.setItem(key, value);
           return true;
         } catch {
           return false;
         }
-      },
-      load() {
+      }
+
+      function safeLocalStorageRemove(key) {
         try {
-          return localStorage.getItem(this.STORAGE_KEY) || this.defaultModel;
+          localStorage.removeItem(key);
+          return true;
         } catch {
-          return this.defaultModel;
+          return false;
         }
       }
-    };
 
-
-    // ===== Elements =====
-    const el = {
-      providerStatusText: document.getElementById('providerStatusText'),
-      toggleProviderBtn: document.getElementById('toggleProviderBtn'),
-      apiConfigSection: document.getElementById('apiConfigSection'),
-      providerChevron: document.getElementById('providerChevron'),
-      modelInput: document.getElementById('modelInput'),
-      apiKeyInput: document.getElementById('apiKeyInput'),
-      saveApiKey: document.getElementById('saveApiKey'),
-      toggleApiKey: document.getElementById('toggleApiKey'),
-      eyeIcon: document.getElementById('eyeIcon'),
-      inputLang: document.getElementById('inputLang'),
-      outputLang: document.getElementById('outputLang'),
-      formalityContainer: document.getElementById('formalityContainer'),
-      formalityLevel: document.getElementById('formalityLevel'),
-      dialectLevel: document.getElementById('dialectLevel'),
-      inputText: document.getElementById('inputText'),
-      outputText: document.getElementById('outputText'),
-      translateBtn: document.getElementById('translateBtn'),
-      translateText: document.getElementById('translateText'),
-      loadingSpinner: document.getElementById('loadingSpinner'),
-      copyBtn: document.getElementById('copyBtn'),
-      clearBtn: document.getElementById('clearBtn'),
-      messageBox: document.getElementById('messageBox'),
-      charCount: document.getElementById('charCount'),
-      swapBtn: document.getElementById('swapBtn'),
-    };
-
-    // ===== Helpers =====
-    const showMessage = (msg, type='info') => {
-      const colors = {
-        error: 'bg-rose-500/15 text-rose-200 border border-rose-500/30',
-        success: 'bg-emerald-500/15 text-emerald-200 border border-emerald-500/30',
-        info: 'bg-sky-500/15 text-sky-200 border border-sky-500/30'
-      };
-      el.messageBox.className = `p-3 rounded-lg text-sm fade-in ${colors[type]}`;
-      el.messageBox.textContent = msg; el.messageBox.classList.remove('hidden');
-      if (type === 'success') setTimeout(()=> el.messageBox.classList.add('hidden'), 2500);
-    };
-    const setLoading = (yes) => {
-      el.translateBtn.disabled = yes;
-      el.translateText.classList.toggle('hidden', yes);
-      el.loadingSpinner.classList.toggle('hidden', !yes);
-    };
-
-    // ===== Language Lists (limited + alphabetical) =====
-    const LANGS = [
-      'English', 'Japanese', 'Korean', 'Simplified Chinese', 'Traditional Chinese'
-    ].sort((a,b)=> a.localeCompare(b,'en'));
-
-    function populateLanguageSelects() {
-      const inVal = el.inputLang.value || 'English';
-      const outVal = el.outputLang.value || 'Korean';
-
-      // Input: all LANGS
-      el.inputLang.innerHTML = LANGS.map(l=>`<option value="${l}">${l}</option>`).join('');
-      el.inputLang.value = inVal;
-
-      // Output: all except current input
-      const outOptions = LANGS.filter(l => l !== el.inputLang.value)
-        .map(l=>`<option value="${l}">${l}</option>`).join('');
-      el.outputLang.innerHTML = outOptions;
-      // If previous outVal equals input, fallback to first available
-      el.outputLang.value = (outVal === el.inputLang.value) ? (LANGS.find(l=> l!==el.inputLang.value) || LANGS[0]) : outVal;
-
-      toggleFormality();
-    }
-
-    function onInputLangChange(){
-      populateLanguageSelects();
-      clearTextFields(); // clear input & output when input language changes
-    }
-
-    function onOutputLangChange(){
-      toggleFormality();
-      clearTextFields(); // clear input & output when output language changes
-    }
-
-
-    function toggleFormality(){
-      const isKoreanOut = el.outputLang.value === 'Korean';
-      const isJapaneseOut = el.outputLang.value === 'Japanese';
-      el.formalityContainer.classList.toggle('hidden', !isKoreanOut);
-      document.getElementById('jpFormalityContainer').classList.toggle('hidden', !isJapaneseOut);
-    }
-
-    function swapLanguages(){
-      const temp = el.inputLang.value;
-      el.inputLang.value = el.outputLang.value; // may not exist in input yet, so repopulate
-      populateLanguageSelects();
-      el.outputLang.value = temp; // will be auto-removed if same as input; repopulate again
-      populateLanguageSelects();
-      // After swapping languages, clear both fields
-      clearTextFields();
-      el.inputText.focus();
-    }
-
-
-    function updateCharCount(){ el.charCount.textContent = `${el.inputText.value.length} characters`; }
-
-    function clearTextFields() {
-  el.inputText.value = '';
-  el.outputText.value = '';
-  updateCharCount();
-}
-
-    function updateProviderStatus(){
-      const key = ApiKeyManager.load();
-      const ok = ApiKeyManager.isValid(key);
-      el.providerStatusText.textContent = ok ? 'Translator Configured ✓' : 'Configure Translator ⚠';
-      el.providerStatusText.className = ok ? 'text-emerald-300' : 'text-red-400';
-      el.translateBtn.disabled = !ok;
-      if (ok && !el.apiKeyInput.value) el.apiKeyInput.value = key;
-    }
-
-    function toggleProviderSection(){
-      const hidden = el.apiConfigSection.classList.contains('hidden');
-      el.apiConfigSection.classList.toggle('hidden');
-      el.providerChevron.style.transform = hidden ? 'rotate(180deg)' : 'rotate(0deg)';
-    }
-
-    function toggleApiKeyVisibility(){
-      const isPassword = el.apiKeyInput.type === 'password';
-      el.apiKeyInput.type = isPassword ? 'text' : 'password';
-    }
-
-    function saveApiKey(){
-      const key = el.apiKeyInput.value.trim();
-      const modelName = (el.modelInput.value || '').trim();
-
-      if (!key) return showMessage('Please enter an API key.', 'error');
-      if (!ApiKeyManager.isValid(key)) return showMessage("Invalid API key format. Groq API keys should start with 'gsk_'.", 'error');
-
-      const keySaved = ApiKeyManager.save(key);
-      const modelSaved = ModelManager.save(modelName || ModelManager.defaultModel);
-
-      if (keySaved && modelSaved) {
-        showMessage('API and model saved successfully!','success');
-        updateProviderStatus();
-        setTimeout(()=>toggleProviderSection(), 800);
-      } else {
-        showMessage('Failed to save API or model. Try again.','error');
+      function getJson(key, fallback) {
+        try {
+          const raw = safeLocalStorageGet(key, "");
+          return raw ? JSON.parse(raw) : fallback;
+        } catch {
+          return fallback;
+        }
       }
-    }
 
+      function setJson(key, value) {
+        return safeLocalStorageSet(key, JSON.stringify(value));
+      }
 
-    // ===== Translate =====
-    async function translateText(){
-      const apiKey = ApiKeyManager.load();
-      if (!ApiKeyManager.isValid(apiKey)) return showMessage('Please configure your translation provider first.','error');
-      const inputLang = el.inputLang.value;
-      const outputLang = el.outputLang.value;
-      const text = el.inputText.value.trim();
-      if (!text) return showMessage('Please enter some text to translate.','error');
-      if (text.length > CONFIG.MAX_CHARS) return showMessage(`Text is too long. Max ${CONFIG.MAX_CHARS} characters.`, 'error');
-
-      setLoading(true); el.messageBox.classList.add('hidden');
-      try {
-        let prompt = `You are a professional translator. Translate the following text that is between %% from ${inputLang} to ${outputLang}. Translate ALL content literally and accurately, including any profanity, slang, or colloquial expressions. Do not censor, modify, or refuse to translate any words. Make sure the translation is natural and what humans would say.`;
-        if (outputLang === 'Korean') {
-          const formality = el.formalityLevel.value;
-          const dialect = el.dialectLevel.value;
-          prompt += ` Use the ${formality} style`;
-          if (dialect !== 'Standard Korean') prompt += ` and translate using ${dialect} characteristics and expressions, the dialect is important.`;
-          prompt += '.';
+      function setStatus(message, type = "error") {
+        if (!message) {
+          els.statusBox.className = "status";
+          els.statusBox.textContent = "";
+          return;
         }
 
-        if (outputLang === 'Japanese') {
-          const jpFormality = document.getElementById('jpFormalityLevel').value;
-          const jpDialect = document.getElementById('jpDialectLevel').value;
-          prompt += ` Use the ${jpFormality} style`;
-          if (jpDialect !== '') prompt += ` and apply features of the ${jpDialect}.`;
-          prompt += '.';
+        els.statusBox.textContent = message;
+        els.statusBox.className = `status active ${type}`;
+      }
+
+      function normalizeLanguage(lang) {
+        if (!lang) return "Other";
+        if (lang === "Insert Language") return "Other";
+        if (Object.prototype.hasOwnProperty.call(styleOptionsByLanguage, lang)) return lang;
+        return "Other";
+      }
+
+      function getTargetLanguage() {
+        if (els.targetLanguage.value === "Insert Language") {
+          const custom = els.customTargetLanguage.value.trim();
+          return custom || "the inserted target language";
         }
-        prompt += `\n\nText to translate: %%${text}%%\n\nProvide ONLY the translation, no explanations.`;
+        return els.targetLanguage.value;
+      }
 
-        const payload = {
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.3, maxOutputTokens: 2048, topP: 0.95, topK: 40 },
-          safetySettings: [
-            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-          ],
+      function getCurrentStyleList() {
+        const target = getTargetLanguage();
+        return styleOptionsByLanguage[normalizeLanguage(target)] || styleOptionsByLanguage.Other;
+      }
+
+      function fillSelect(select, options, preferred) {
+        const previous = preferred || select.value;
+        select.innerHTML = "";
+
+        for (const optionText of options) {
+          const option = document.createElement("option");
+          option.value = optionText;
+          option.textContent = optionText;
+          select.appendChild(option);
+        }
+
+        if (options.includes(previous)) {
+          select.value = previous;
+        } else if (options.length) {
+          select.value = options[0];
+        }
+      }
+
+      function updateDialectAndFormality(preferredDialect, preferredFormality) {
+        const list = getCurrentStyleList();
+        fillSelect(els.dialect, list, preferredDialect);
+        fillSelect(els.formality, list, preferredFormality);
+      }
+
+      function updateCustomLanguageVisibility() {
+        const isCustom = els.targetLanguage.value === "Insert Language";
+        els.customLanguageRow.classList.toggle("active", isCustom);
+      }
+
+      function updateSwapState() {
+        els.swapBtn.disabled = els.sourceLanguage.value === "Auto-detect";
+        els.swapBtn.title = els.swapBtn.disabled
+          ? "Swap is disabled when source language is Auto-detect"
+          : "Swap source and target languages";
+      }
+
+      function updateCounters() {
+        const inputLength = [...els.inputText.value].length;
+        const outputLength = [...els.outputText.value].length;
+        els.charCounter.textContent = `${inputLength.toLocaleString()} ${inputLength === 1 ? "character" : "characters"}`;
+        els.outputCounter.textContent = `${outputLength.toLocaleString()} ${outputLength === 1 ? "character" : "characters"}`;
+      }
+
+      function updateKeyStatus() {
+        const saved = safeLocalStorageGet(STORAGE.apiKey, "");
+        if (!saved) {
+          els.keyStatus.textContent = "No key saved.";
+          return;
+        }
+
+        const masked = saved.length <= 8
+          ? "Saved key: ••••••••"
+          : `Saved key: ${saved.slice(0, 4)}••••••••${saved.slice(-4)}`;
+
+        els.keyStatus.textContent = els.apiKeyInput.type === "text" ? `Saved key visible in field.` : masked;
+      }
+
+      function setLoading(isLoading) {
+        const buttons = [els.translateBtn, els.mobileTranslateBtn];
+        for (const button of buttons) {
+          button.disabled = isLoading;
+          button.classList.toggle("is-loading", isLoading);
+          const label = button.querySelector(".translate-label");
+          if (label) label.textContent = isLoading ? "Translating..." : "Translate";
+        }
+
+        els.naturalBtn.disabled = isLoading;
+        els.politeBtn.disabled = isLoading;
+        els.casualBtn.disabled = isLoading;
+      }
+
+      function savePreferences() {
+        const prefs = {
+          sourceLanguage: els.sourceLanguage.value,
+          targetLanguage: els.targetLanguage.value,
+          customTargetLanguage: els.customTargetLanguage.value,
+          dialect: els.dialect.value,
+          formality: els.formality.value,
+          tone: els.tone.value,
+          returnOnlyMode: els.returnOnlyMode.checked,
+          explainMode: els.explainMode.checked
         };
 
-        const controller = new AbortController();
-        const timeoutId = setTimeout(()=> controller.abort(), 30000);
-        const modelName = ModelManager.load();
+        setJson(STORAGE.prefs, prefs);
+      }
 
-        const groqPayload = {
-          model: modelName,
-          messages: [
-            { role: "system", content: "You are a precise translation engine. Output ONLY the translation." },
-            { role: "user", content: prompt }
-          ],
-          temperature: 0.2
+      function loadPreferences() {
+        const prefs = getJson(STORAGE.prefs, {});
+
+        if (prefs.sourceLanguage) els.sourceLanguage.value = prefs.sourceLanguage;
+        if (prefs.targetLanguage) els.targetLanguage.value = prefs.targetLanguage;
+        if (typeof prefs.customTargetLanguage === "string") els.customTargetLanguage.value = prefs.customTargetLanguage;
+        if (prefs.tone) els.tone.value = prefs.tone;
+        if (typeof prefs.returnOnlyMode === "boolean") els.returnOnlyMode.checked = prefs.returnOnlyMode;
+        if (typeof prefs.explainMode === "boolean") els.explainMode.checked = prefs.explainMode;
+
+        updateCustomLanguageVisibility();
+        updateDialectAndFormality(prefs.dialect, prefs.formality);
+        updateSwapState();
+      }
+
+      function applyTheme(theme) {
+        const resolved = theme === "light" ? "light" : "dark";
+        document.documentElement.dataset.theme = resolved;
+        safeLocalStorageSet(STORAGE.theme, resolved);
+        els.themeBtn.textContent = resolved === "dark" ? "Light mode" : "Dark mode";
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) metaTheme.setAttribute("content", resolved === "dark" ? "#101827" : "#f6f7fb");
+      }
+
+      function loadTheme() {
+        const saved = safeLocalStorageGet(STORAGE.theme, "");
+        if (saved === "dark" || saved === "light") {
+          applyTheme(saved);
+          return;
+        }
+
+        const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        applyTheme(prefersDark ? "dark" : "light");
+      }
+
+      function loadSettings() {
+        const key = safeLocalStorageGet(STORAGE.apiKey, "");
+        const model = safeLocalStorageGet(STORAGE.model, DEFAULT_MODEL);
+
+        els.apiKeyInput.value = key;
+        els.modelName.value = model || DEFAULT_MODEL;
+        updateKeyStatus();
+      }
+
+      function createManifest() {
+        const manifest = {
+          name: "AI Translator",
+          short_name: "Translator",
+          description: "Browser-only Gemini AI translator",
+          start_url: ".",
+          scope: ".",
+          display: "standalone",
+          background_color: "#101827",
+          theme_color: "#101827",
+          icons: [
+            {
+              src: "image.png",
+              sizes: "192x192",
+              type: "image/png",
+              purpose: "any maskable"
+            },
+            {
+              src: "image.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "any maskable"
+            }
+          ]
         };
 
+        try {
+          const blob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("link");
+          link.rel = "manifest";
+          link.href = url;
+          document.head.appendChild(link);
+        } catch {
+          return;
+        }
+      }
 
-        const res = await fetch(CONFIG.API_URL, {
+      function buildPrompt(modeInstruction = "") {
+        const sourceLanguage = els.sourceLanguage.value;
+        const targetLanguage = getTargetLanguage();
+        const dialect = els.dialect.value || "Default native variety";
+        const formality = els.formality.value || "Natural";
+        const tone = els.tone.value || "Natural";
+        const explain = els.explainMode.checked;
+        const returnOnly = els.returnOnlyMode.checked;
+
+        let outputRule = "Return only the translation unless explanation mode is enabled.";
+        if (explain) {
+          outputRule = [
+            "Explanation mode is enabled. Return exactly these sections:",
+            "1. Translation",
+            "2. Literal meaning",
+            "3. Tone/formality explanation",
+            "4. Alternative natural versions"
+          ].join("\n");
+        } else if (returnOnly) {
+          outputRule = "Return only the final translated text. Do not include labels, quotes, markdown, notes, alternatives, or explanations.";
+        }
+
+        const template = [
+          "You are a professional multilingual translator.",
+          `Translate the following text from ${sourceLanguage} to ${targetLanguage}.`,
+          `Target dialect/region: ${dialect}.`,
+          `Formality: ${formality}.`,
+          `Style/tone: ${tone}.`,
+          "Rules: preserve meaning, emotion, politeness level, slang, flirting, humor, sarcasm, anger, softness, and cultural nuance.",
+          "Use natural native phrasing, not textbook phrasing.",
+          "If the text contains ambiguity, choose the most natural interpretation.",
+          outputRule
+        ];
+
+        if (modeInstruction) {
+          template.push(`Additional instruction: ${modeInstruction}`);
+        }
+
+        template.push("");
+        template.push("Text to translate:");
+        template.push(els.inputText.value.trim());
+
+        return template.join("\n");
+      }
+
+      function extractTextFromGemini(data) {
+        const candidates = Array.isArray(data?.candidates) ? data.candidates : [];
+
+        for (const candidate of candidates) {
+          const parts = Array.isArray(candidate?.content?.parts) ? candidate.content.parts : [];
+          const text = parts
+            .map(part => {
+              if (typeof part?.text === "string") return part.text;
+              if (typeof part === "string") return part;
+              return "";
+            })
+            .filter(Boolean)
+            .join("\n")
+            .trim();
+
+          if (text) return text;
+        }
+
+        if (typeof data?.text === "string" && data.text.trim()) {
+          return data.text.trim();
+        }
+
+        if (typeof data?.output === "string" && data.output.trim()) {
+          return data.output.trim();
+        }
+
+        return "";
+      }
+
+      function humanApiError(status, data) {
+        const rawMessage =
+          data?.error?.message ||
+          data?.message ||
+          (typeof data === "string" ? data : "") ||
+          "Unknown API error.";
+
+        if (status === 400) return `Gemini rejected the request. Check your model name and input.\n\n${rawMessage}`;
+        if (status === 401 || status === 403) return `API key problem. Check that your Gemini API key is valid and allowed to use this model.\n\n${rawMessage}`;
+        if (status === 404) return `Model not found. Check the Gemini model name in Settings.\n\n${rawMessage}`;
+        if (status === 429) return `Rate limit reached. Wait a bit or use a different Gemini key or model.\n\n${rawMessage}`;
+        if (status >= 500) return `Gemini server error. Try again later.\n\n${rawMessage}`;
+
+        return `Gemini API error (${status}).\n\n${rawMessage}`;
+      }
+
+      async function callGemini(prompt) {
+        const apiKey = safeLocalStorageGet(STORAGE.apiKey, "").trim();
+        const model = (safeLocalStorageGet(STORAGE.model, DEFAULT_MODEL) || DEFAULT_MODEL).trim();
+
+        if (!apiKey) {
+          throw new Error("No Gemini API key is saved. Open Settings, paste your key, and click Save key locally.");
+        }
+
+        if (!model) {
+          throw new Error("No Gemini model name is set. Open Settings and save a model name.");
+        }
+
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+        const body = {
+          contents: [
+            {
+              role: "user",
+              parts: [
+                { text: prompt }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.35,
+            topP: 0.95,
+            topK: 40
+          }
+        };
+
+        const response = await fetch(endpoint, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`
+            "Content-Type": "application/json"
           },
-          body: JSON.stringify(groqPayload)
+          body: JSON.stringify(body)
         });
 
-        clearTimeout(timeoutId);
-        if (!res.ok) {
-          const err = await res.json().catch(()=>({error:{message:`HTTP ${res.status}`}}));
-          if (res.status === 400 && err.error?.message?.includes('API_KEY_INVALID')) { ApiKeyManager.remove(); updateProviderStatus(); }
-          throw new Error(err.error?.message || `HTTP ${res.status}`);
+        let data = null;
+        const text = await response.text();
+
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch {
+          data = text || {};
         }
-        const data = await res.json();
-        if (data.promptFeedback?.blockReason) throw new Error(`Content blocked by safety filters: ${data.promptFeedback.blockReason}`);
-        const translated = data.choices?.[0]?.message?.content;
-        if (!translated) throw new Error('No translation text found in response.');
 
-        // 🔹 Clean output before displaying
-        let cleaned = translated.trim();
-        cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, "");
-        cleaned = cleaned.replace(/^%%+|%%+$/g, "");  // strip %% at start/end
-        cleaned = cleaned.replace(/^"+|"+$/g, "");    // strip quotes at start/end
-        el.outputText.value = cleaned.trim();
+        if (!response.ok) {
+          throw new Error(humanApiError(response.status, data));
+        }
 
-        showMessage('Translation completed successfully!','success');
-      } catch (e) {
-        showMessage(`Translation failed: ${e.message}`, 'error');
-      } finally { setLoading(false); }
-    }
+        const extracted = extractTextFromGemini(data);
 
-    function copyText(){
-      const t = el.outputText.value; if (!t) return showMessage('No text to copy.','error');
-      navigator.clipboard.writeText(t).then(()=> showMessage('Translation copied to clipboard!','success')).catch(()=> showMessage('Failed to copy. Select and copy manually.','error'));
-    }
+        if (!extracted) {
+          throw new Error("Gemini returned an empty or unexpected response. Try again, or switch model in Settings.");
+        }
 
-    function clearAll(){
-      clearTextFields();
-      el.messageBox.classList.add('hidden');
-      el.inputText.focus();
-    }
-
-    // ===== Events =====
-    el.toggleProviderBtn.addEventListener('click', toggleProviderSection);
-    el.toggleApiKey.addEventListener('click', toggleApiKeyVisibility);
-    el.saveApiKey.addEventListener('click', saveApiKey);
-    el.translateBtn.addEventListener('click', translateText);
-    el.copyBtn.addEventListener('click', copyText);
-    el.clearBtn.addEventListener('click', clearAll);
-    el.swapBtn.addEventListener('click', swapLanguages);
-
-    el.apiKeyInput.addEventListener('keydown', (e)=>{ if (e.key === 'Enter'){ e.preventDefault(); saveApiKey(); } });
-    el.inputText.addEventListener('input', updateCharCount);
-
-    // Language mutual exclusion
-    el.inputLang.addEventListener('change', onInputLangChange);
-    el.outputLang.addEventListener('change', onOutputLangChange);
-
-    // ===== Init =====
-    (function init(){
-      populateLanguageSelects();
-      // Defaults: English -> Korean
-      el.inputLang.value = 'English';
-      populateLanguageSelects();
-      el.outputLang.value = 'Korean';
-      toggleFormality();
-      updateProviderStatus();
-
-      // NEW: load model into the textbox (default if nothing saved)
-      if (el.modelInput) {
-        el.modelInput.value = ModelManager.load();
+        return extracted;
       }
 
-      updateCharCount();
-      el.inputText.focus();
-    })();
+      async function translate(modeInstruction = "") {
+        const input = els.inputText.value.trim();
 
+        setStatus("");
+
+        if (!input) {
+          setStatus("Input is empty. Type or paste text before translating.", "warning");
+          els.inputText.focus();
+          return;
+        }
+
+        savePreferences();
+        setLoading(true);
+
+        try {
+          const prompt = buildPrompt(modeInstruction);
+          const output = await callGemini(prompt);
+          els.outputText.value = output;
+          updateCounters();
+          addHistory({
+            sourceText: input,
+            translatedText: output,
+            sourceLanguage: els.sourceLanguage.value,
+            targetLanguage: getTargetLanguage(),
+            dialect: els.dialect.value,
+            formality: els.formality.value,
+            tone: els.tone.value,
+            timestamp: Date.now()
+          });
+          setStatus("Translation complete.", "success");
+        } catch (error) {
+          setStatus(error?.message || "Translation failed.", "error");
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      function getHistory() {
+        const history = getJson(STORAGE.history, []);
+        return Array.isArray(history) ? history : [];
+      }
+
+      function saveHistory(history) {
+        setJson(STORAGE.history, history.slice(0, MAX_HISTORY));
+      }
+
+      function addHistory(item) {
+        const history = getHistory();
+        history.unshift(item);
+        saveHistory(history);
+        renderHistory();
+      }
+
+      function truncate(text, max = 900) {
+        if (!text) return "";
+        return text.length > max ? `${text.slice(0, max).trim()}...` : text;
+      }
+
+      function formatDate(timestamp) {
+        try {
+          return new Intl.DateTimeFormat(undefined, {
+            year: "numeric",
+            month: "short",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+          }).format(new Date(timestamp));
+        } catch {
+          return new Date(timestamp).toLocaleString();
+        }
+      }
+
+      function renderHistory() {
+        const history = getHistory();
+        els.historyList.innerHTML = "";
+
+        if (!history.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty-history";
+          empty.textContent = "No local history yet.";
+          els.historyList.appendChild(empty);
+          return;
+        }
+
+        history.forEach((item, index) => {
+          const wrap = document.createElement("article");
+          wrap.className = "history-item";
+
+          const meta = document.createElement("div");
+          meta.className = "history-meta";
+          meta.textContent = `${item.sourceLanguage || "Unknown"} → ${item.targetLanguage || "Unknown"} · ${item.dialect || "Default"} · ${item.formality || "Natural"} · ${item.tone || "Natural"} · ${formatDate(item.timestamp || Date.now())}`;
+
+          const texts = document.createElement("div");
+          texts.className = "history-texts";
+
+          const source = document.createElement("div");
+          source.className = "history-text";
+          source.textContent = truncate(item.sourceText || "");
+
+          const translated = document.createElement("div");
+          translated.className = "history-text";
+          translated.textContent = truncate(item.translatedText || "");
+
+          texts.append(source, translated);
+
+          const actions = document.createElement("div");
+          actions.className = "history-actions";
+
+          const restoreBtn = document.createElement("button");
+          restoreBtn.className = "soft-btn";
+          restoreBtn.type = "button";
+          restoreBtn.textContent = "Restore";
+          restoreBtn.addEventListener("click", () => {
+            restoreHistoryItem(index);
+          });
+
+          const copyBtn = document.createElement("button");
+          copyBtn.className = "soft-btn";
+          copyBtn.type = "button";
+          copyBtn.textContent = "Copy translation";
+          copyBtn.addEventListener("click", async () => {
+            await copyText(item.translatedText || "");
+          });
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.className = "danger-btn";
+          deleteBtn.type = "button";
+          deleteBtn.textContent = "Delete";
+          deleteBtn.addEventListener("click", () => {
+            deleteHistoryItem(index);
+          });
+
+          actions.append(restoreBtn, copyBtn, deleteBtn);
+          wrap.append(meta, texts, actions);
+          els.historyList.appendChild(wrap);
+        });
+      }
+
+      function restoreHistoryItem(index) {
+        const item = getHistory()[index];
+        if (!item) return;
+
+        if (item.sourceLanguage && [...els.sourceLanguage.options].some(o => o.value === item.sourceLanguage)) {
+          els.sourceLanguage.value = item.sourceLanguage;
+        }
+
+        if (item.targetLanguage && [...els.targetLanguage.options].some(o => o.value === item.targetLanguage)) {
+          els.targetLanguage.value = item.targetLanguage;
+        } else if (item.targetLanguage) {
+          els.targetLanguage.value = "Insert Language";
+          els.customTargetLanguage.value = item.targetLanguage;
+        }
+
+        updateCustomLanguageVisibility();
+        updateDialectAndFormality(item.dialect, item.formality);
+
+        if (item.tone && [...els.tone.options].some(o => o.value === item.tone)) {
+          els.tone.value = item.tone;
+        }
+
+        els.inputText.value = item.sourceText || "";
+        els.outputText.value = item.translatedText || "";
+        updateSwapState();
+        updateCounters();
+        savePreferences();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function deleteHistoryItem(index) {
+        const history = getHistory();
+        history.splice(index, 1);
+        saveHistory(history);
+        renderHistory();
+      }
+
+      async function copyText(text) {
+        const value = text || els.outputText.value;
+        if (!value.trim()) {
+          setStatus("Nothing to copy.", "warning");
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(value);
+          setStatus("Copied to clipboard.", "success");
+        } catch {
+          try {
+            const temp = document.createElement("textarea");
+            temp.value = value;
+            temp.style.position = "fixed";
+            temp.style.opacity = "0";
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand("copy");
+            temp.remove();
+            setStatus("Copied to clipboard.", "success");
+          } catch {
+            setStatus("Copy failed. Select the output manually and copy it.", "error");
+          }
+        }
+      }
+
+      async function pasteFromClipboard() {
+        if (!navigator.clipboard || !navigator.clipboard.readText) {
+          setStatus("Clipboard paste is not available in this browser. Paste manually instead.", "warning");
+          return;
+        }
+
+        try {
+          const text = await navigator.clipboard.readText();
+          if (!text) {
+            setStatus("Clipboard is empty or unavailable.", "warning");
+            return;
+          }
+
+          const current = els.inputText.value;
+          els.inputText.value = current ? `${current}${current.endsWith("\n") ? "" : "\n"}${text}` : text;
+          updateCounters();
+          savePreferences();
+          setStatus("Pasted from clipboard.", "success");
+        } catch {
+          setStatus("Browser blocked clipboard access. Paste manually with Ctrl+V or Cmd+V.", "warning");
+        }
+      }
+
+      function clearInput() {
+        els.inputText.value = "";
+        updateCounters();
+        savePreferences();
+        els.inputText.focus();
+      }
+
+      function clearAll() {
+        els.inputText.value = "";
+        els.outputText.value = "";
+        setStatus("");
+        updateCounters();
+        savePreferences();
+        els.inputText.focus();
+      }
+
+      function swapLanguages() {
+        if (els.sourceLanguage.value === "Auto-detect") return;
+
+        const source = els.sourceLanguage.value;
+        const target = getTargetLanguage();
+
+        if ([...els.sourceLanguage.options].some(o => o.value === target)) {
+          els.sourceLanguage.value = target;
+        } else {
+          els.sourceLanguage.value = "Auto-detect";
+        }
+
+        if ([...els.targetLanguage.options].some(o => o.value === source)) {
+          els.targetLanguage.value = source;
+        } else {
+          els.targetLanguage.value = "Insert Language";
+          els.customTargetLanguage.value = source;
+        }
+
+        const input = els.inputText.value;
+        els.inputText.value = els.outputText.value;
+        els.outputText.value = input;
+
+        updateCustomLanguageVisibility();
+        updateDialectAndFormality();
+        updateSwapState();
+        updateCounters();
+        savePreferences();
+      }
+
+      function saveKey() {
+        const key = els.apiKeyInput.value.trim();
+
+        if (!key) {
+          setStatus("API key field is empty. Paste a key before saving.", "warning");
+          return;
+        }
+
+        if (!safeLocalStorageSet(STORAGE.apiKey, key)) {
+          setStatus("Could not save key. localStorage may be blocked in this browser.", "error");
+          return;
+        }
+
+        updateKeyStatus();
+        setStatus("API key saved locally in this browser.", "success");
+      }
+
+      function saveModel() {
+        const model = els.modelName.value.trim() || DEFAULT_MODEL;
+
+        if (!safeLocalStorageSet(STORAGE.model, model)) {
+          setStatus("Could not save model name. localStorage may be blocked in this browser.", "error");
+          return;
+        }
+
+        els.modelName.value = model;
+        setStatus(`Model saved: ${model}`, "success");
+      }
+
+      function deleteKey() {
+        safeLocalStorageRemove(STORAGE.apiKey);
+        els.apiKeyInput.value = "";
+        updateKeyStatus();
+        setStatus("Saved API key deleted from this browser.", "success");
+      }
+
+      function bindEvents() {
+        els.themeBtn.addEventListener("click", () => {
+          const current = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+          applyTheme(current === "dark" ? "light" : "dark");
+        });
+
+        els.settingsOpenBtn.addEventListener("click", () => {
+          els.settingsDetails.open = true;
+          els.settingsDetails.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
+        els.sourceLanguage.addEventListener("change", () => {
+          updateSwapState();
+          savePreferences();
+        });
+
+        els.targetLanguage.addEventListener("change", () => {
+          updateCustomLanguageVisibility();
+          updateDialectAndFormality();
+          updateSwapState();
+          savePreferences();
+        });
+
+        els.customTargetLanguage.addEventListener("input", () => {
+          updateDialectAndFormality();
+          savePreferences();
+        });
+
+        [els.dialect, els.formality, els.tone, els.returnOnlyMode, els.explainMode].forEach(el => {
+          el.addEventListener("change", savePreferences);
+        });
+
+        els.explainMode.addEventListener("change", () => {
+          if (els.explainMode.checked) {
+            els.returnOnlyMode.checked = false;
+          }
+          savePreferences();
+        });
+
+        els.returnOnlyMode.addEventListener("change", () => {
+          if (els.returnOnlyMode.checked) {
+            els.explainMode.checked = false;
+          }
+          savePreferences();
+        });
+
+        els.inputText.addEventListener("input", () => {
+          updateCounters();
+        });
+
+        els.outputText.addEventListener("input", updateCounters);
+
+        els.translateBtn.addEventListener("click", () => translate());
+        els.mobileTranslateBtn.addEventListener("click", () => translate());
+
+        els.naturalBtn.addEventListener("click", () => {
+          translate("Make the result smoother and more natural, as a native speaker would actually say it. Keep the original meaning.");
+        });
+
+        els.politeBtn.addEventListener("click", () => {
+          translate("Make the result more polite, respectful, and socially safe while keeping it natural.");
+        });
+
+        els.casualBtn.addEventListener("click", () => {
+          translate("Make the result more casual, relaxed, and natural for texting while preserving the meaning.");
+        });
+
+        els.pasteBtn.addEventListener("click", pasteFromClipboard);
+        els.copyBtn.addEventListener("click", () => copyText());
+        els.clearInputBtn.addEventListener("click", clearInput);
+        els.clearAllBtn.addEventListener("click", clearAll);
+        els.swapBtn.addEventListener("click", swapLanguages);
+
+        els.saveKeyBtn.addEventListener("click", saveKey);
+        els.saveModelBtn.addEventListener("click", saveModel);
+        els.deleteKeyBtn.addEventListener("click", deleteKey);
+
+        els.toggleKeyBtn.addEventListener("click", () => {
+          els.apiKeyInput.type = els.apiKeyInput.type === "password" ? "text" : "password";
+          updateKeyStatus();
+        });
+
+        els.apiKeyInput.addEventListener("keydown", event => {
+          if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+            saveKey();
+          }
+        });
+
+        els.modelName.addEventListener("keydown", event => {
+          if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+            saveModel();
+          }
+        });
+
+        els.deleteHistoryBtn.addEventListener("click", () => {
+          saveHistory([]);
+          renderHistory();
+          setStatus("Local history deleted.", "success");
+        });
+
+        document.addEventListener("keydown", event => {
+          if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+            event.preventDefault();
+            translate();
+          }
+        });
+
+        window.addEventListener("beforeunload", savePreferences);
+      }
+
+      function init() {
+        createManifest();
+        loadTheme();
+        loadPreferences();
+        loadSettings();
+        updateCounters();
+        renderHistory();
+        bindEvents();
+      }
+
+      init();
+    })();
   </script>
+
 </body>
 </html>
